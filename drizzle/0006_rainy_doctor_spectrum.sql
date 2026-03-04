@@ -1,0 +1,1 @@
+ALTER TABLE `students` ADD `grade` varchar(50) DEFAULT 'الرابع الابتدائي' NOT NULL;
