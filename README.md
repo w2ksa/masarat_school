@@ -1,222 +1,180 @@
-# منصة مسارات التعليمية 🎓
+# مسارات المدرسة — دليل المطور
 
-تطبيق ويب عربي متكامل لإدارة المحتوى التعليمي مع نظام أدوار متقدم ودعم Firebase.
+> كل البيانات المهمة والروابط والرموز التي تحتاجها أنت وأي مبرمج
 
-## المميزات ✨
+---
 
-- 🌐 **دعم كامل للغة العربية** مع RTL
-- 🌙 **الوضع الداكن** كإعداد افتراضي
-- 👥 **نظام أدوار متقدم** (مستخدمون، معلمون، إداريون)
-- 📊 **لوحة تحكم إدارية** شاملة
-- 📁 **تخزين الملفات على S3** بشكل آمن
-- 🔔 **نظام إشعارات تلقائية**
-- 🔥 **متصل بـ Firebase** (Database + Hosting)
-- ✅ **اختبارات Vitest** شاملة
+## الروابط الأساسية
 
-## التقنيات المستخدمة 🛠️
+| الوصف | الرابط |
+|------|--------|
+| **مستودع GitHub** | https://github.com/w2ksa/masarat_school |
+| **النسخ (Clone)** | `git clone https://github.com/w2ksa/masarat_school.git` |
+| **Railway** (نشر التطبيق) | https://railway.app |
+| **Firebase Console** | https://console.firebase.google.com |
 
-### Frontend
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- Wouter (Routing)
-- shadcn/ui (Components)
-- tRPC (Type-safe API)
+---
 
-### Backend
-- Express 4
-- tRPC 11
-- Drizzle ORM
-- MySQL/TiDB
-- S3 Storage
-
-### Firebase
-- Firestore Database
-- Firebase Hosting
-- Firebase SDK
-
-## البنية الهيكلية 📁
-
-```
-masarat_school/
-├── client/                 # تطبيق React
-│   ├── src/
-│   │   ├── pages/         # صفحات التطبيق
-│   │   │   ├── Home.tsx           # الصفحة الرئيسية
-│   │   │   ├── AdminDashboard.tsx # لوحة التحكم الإدارية
-│   │   │   └── TeacherDashboard.tsx # لوحة المعلمين
-│   │   ├── components/    # مكونات قابلة لإعادة الاستخدام
-│   │   ├── lib/          # مكتبات مساعدة
-│   │   │   ├── trpc.ts   # إعداد tRPC
-│   │   │   └── firebase.ts # إعداد Firebase
-│   │   └── index.css     # أنماط عامة
-│   └── index.html        # صفحة HTML الرئيسية
-├── server/               # خادم Express
-│   ├── routers.ts       # مسارات tRPC
-│   ├── db.ts            # دوال قاعدة البيانات
-│   └── *.test.ts        # اختبارات Vitest
-├── drizzle/             # قاعدة البيانات
-│   └── schema.ts        # جداول قاعدة البيانات
-├── firebase.json        # إعداد Firebase
-├── firestore.rules      # قواعد أمان Firestore
-├── firestore.indexes.json # فهارس Firestore
-├── GUIDE.md            # دليل الاستخدام
-└── todo.md             # قائمة المهام
-```
-
-## التثبيت والتشغيل 🚀
+## تشغيل المشروع محلياً
 
 ### المتطلبات
-- Node.js 22+
-- pnpm
-- حساب Firebase
-- قاعدة بيانات MySQL/TiDB
+- **Node.js** 22+
+- **pnpm** (مدير الحزم)
+- **MySQL** أو **TiDB** (اختياري — يعمل بدون قاعدة بيانات في وضع التطوير)
 
-### خطوات التثبيت
+### الأوامر الأساسية
 
-1. **استنساخ المشروع**
 ```bash
-git clone <repository-url>
-cd masarat_school
-```
-
-2. **تثبيت الحزم**
-```bash
+# تثبيت الحزم
 pnpm install
+
+# تشغيل وضع التطوير (Frontend + Backend)
+pnpm dev
+
+# بناء للإنتاج
+pnpm build
+
+# تشغيل النسخة المبنية
+pnpm start
+
+# تشغيل الاختبارات
+pnpm test
+
+# تطبيق migrations قاعدة البيانات
+pnpm db:push
 ```
 
-3. **إعداد المتغيرات البيئية**
-أنشئ ملف `.env` وأضف:
-```env
-DATABASE_URL=your_database_url
-JWT_SECRET=your_jwt_secret
+**الرابط المحلي:** http://localhost:3000
 
-# Firebase Configuration
+---
+
+## المتغيرات البيئية (.env)
+
+انسخ `.env.example` إلى `.env` وعدّل القيم:
+
+```env
+# ===== إلزامي للتشغيل =====
+
+# المنفذ (افتراضي 3000)
+PORT=3000
+NODE_ENV=production
+
+# قاعدة البيانات MySQL/TiDB
+# بدونها يعمل النظام من الذاكرة (In-Memory) للتطوير
+DATABASE_URL=mysql://user:password@host:port/database
+
+# مفتاح JWT للمصادقة
+JWT_SECRET=your-jwt-secret-key-here
+
+# ===== OAuth (تسجيل الدخول) =====
+OAUTH_SERVER_URL=https://your-oauth-server.com
+VITE_OAUTH_PORTAL_URL=https://your-oauth-portal.com
+VITE_APP_ID=your-app-id
+
+# معرف المالك (يُعطى صلاحيات إدارية تلقائياً)
+OWNER_OPEN_ID=your-owner-open-id
+
+# ===== Firebase (اختياري) =====
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
 VITE_FIREBASE_PROJECT_ID=your_project_id
 VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
+
+# ===== التخزين S3 (اختياري) =====
+BUILT_IN_FORGE_API_URL=https://your-forge-api.com
+BUILT_IN_FORGE_API_KEY=your-forge-api-key
 ```
-
-4. **تطبيق تغييرات قاعدة البيانات**
-```bash
-pnpm db:push
-```
-
-5. **تشغيل التطبيق في وضع التطوير**
-```bash
-pnpm dev
-```
-
-التطبيق سيعمل على: `http://localhost:3000`
-
-## الاختبار 🧪
-
-تشغيل جميع الاختبارات:
-```bash
-pnpm test
-```
-
-## البناء والنشر 📦
-
-### البناء للإنتاج
-```bash
-pnpm build
-```
-
-### النشر على Firebase
-```bash
-firebase deploy
-```
-
-## نظام الأدوار 👥
-
-### المستخدمون العاديون (user)
-- تصفح الصفحة الرئيسية
-- عرض الملفات التعليمية
-- تحميل الملفات
-
-### المعلمون (teacher)
-- جميع صلاحيات المستخدمون العاديون
-- التسجيل كمعلم
-- رفع الملفات التعليمية
-- إدارة الملفات الخاصة
-
-### الإداريون (admin)
-- جميع صلاحيات المعلمون
-- الوصول إلى لوحة التحكم الإدارية
-- الموافقة/الرفض على طلبات المعلمين
-- عرض الإحصائيات
-- إدارة جميع الملفات
-- استقبال الإشعارات
-
-## قاعدة البيانات 🗄️
-
-### الجداول الرئيسية
-
-#### users
-- معلومات المستخدمين الأساسية
-- الأدوار (user, teacher, admin)
-
-#### teachers
-- معلومات المعلمين الإضافية
-- التخصص، رقم الهاتف، النبذة
-- حالة الموافقة (pending, approved, rejected)
-
-#### educational_files
-- بيانات الملفات التعليمية
-- روابط S3
-- البيانات الوصفية
-
-#### notifications
-- إشعارات النظام
-- حالة القراءة
-
-## Firebase Integration 🔥
-
-### Firestore Database
-تم إعداد قواعد أمان صارمة في `firestore.rules`:
-- المستخدمون: قراءة الملفات العامة
-- المعلمون: إدارة ملفاتهم
-- الإداريون: وصول كامل
-
-### Firebase Hosting
-إعداد الاستضافة في `firebase.json`:
-- SPA routing
-- Cache headers
-- Security headers
-
-## الأمان 🔒
-
-- مصادقة Manus OAuth
-- نظام أدوار متقدم (RBAC)
-- قواعد Firestore آمنة
-- تخزين آمن على S3
-- حماية CSRF
-- Validation بواسطة Zod
-
-## المساهمة 🤝
-
-نرحب بالمساهمات! يرجى:
-1. Fork المشروع
-2. إنشاء فرع للميزة الجديدة
-3. Commit التغييرات
-4. Push إلى الفرع
-5. فتح Pull Request
-
-## الترخيص 📄
-
-MIT License - راجع ملف LICENSE للتفاصيل
-
-## الدعم 💬
-
-للحصول على المساعدة:
-- راجع [دليل الاستخدام](./GUIDE.md)
-- راجع [قائمة المهام](./todo.md)
-- افتح Issue على GitHub
 
 ---
 
-صُنع بـ ❤️ للتعليم العربي
+## نشر على Railway
+
+1. اربط المستودع من GitHub في Railway
+2. أضف المتغيرات البيئية في **Variables**
+3. Railway يستخدم `railway.json` تلقائياً:
+   - **Build:** `pnpm install && pnpm run build`
+   - **Start:** `pnpm run start`
+
+---
+
+## بنية المشروع
+
+```
+masarat_school/
+├── client/              # واجهة React
+│   ├── src/
+│   │   ├── pages/      # الصفحات
+│   │   ├── components/ # المكونات
+│   │   └── lib/        # إعدادات (trpc, firebase)
+│   └── index.html
+├── server/              # خادم Express + tRPC
+│   ├── _core/           # الإعداد الأساسي
+│   ├── db.ts            # قاعدة البيانات + In-Memory
+│   └── routers.ts       # مسارات tRPC
+├── shared/              # كود مشترك
+├── drizzle/             # schema و migrations
+├── .env.example         # نموذج المتغيرات
+├── railway.json         # إعداد Railway
+└── package.json
+```
+
+---
+
+## التقنيات المستخدمة
+
+| الطبقة | التقنية |
+|--------|---------|
+| Frontend | React 19, TypeScript, Vite, Tailwind, shadcn/ui, Wouter |
+| Backend | Express 4, tRPC 11, Drizzle ORM |
+| قاعدة البيانات | MySQL / TiDB (mysql2) |
+| المصادقة | JWT (jose), OAuth |
+| التخزين | S3 (اختياري) |
+
+---
+
+## الميزات الرئيسية
+
+- إدارة الطلاب (إضافة، تعديل، حذف، النقاط)
+- التصويت من المعلمين (٣ أصوات لكل معلم، ١٠ نقاط للطالب)
+- رفع المحتوى (حد ٢ رفع لكل طالب كل ٢٤ ساعة)
+- سجل النشاطات
+- تقارير أسبوعية
+- أعلى ٥ طلاب
+- دعم الجوال (Responsive)
+
+---
+
+## أوامر Git الأساسية
+
+```bash
+# رفع التحديثات
+git add .
+git commit -m "وصف التعديل"
+git push origin main
+
+# سحب آخر التحديثات
+git pull origin main
+```
+
+---
+
+## ملاحظات مهمة
+
+1. **بدون DATABASE_URL:** النظام يعمل من الذاكرة — مناسب للتطوير فقط.
+2. **JWT_SECRET:** يجب أن يكون قوياً ومختلفاً في الإنتاج.
+3. **OWNER_OPEN_ID:** يُحدد من OAuth — صاحبه يحصل على صلاحيات إدارية.
+4. **محتوى الطلاب:** حد ٢ رفع لكل طالب كل ٢٤ ساعة (محفوظ في الكود وقاعدة البيانات).
+
+---
+
+## الدعم والمراجع
+
+- [دليل الاستخدام](./GUIDE.md)
+- [قائمة المهام](./todo.md)
+- [تقرير الاختبار النهائي](./FINAL_TEST_REPORT.md)
+
+---
+
+صُنع لمسارات المدرسة 🎓
