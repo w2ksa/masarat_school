@@ -92,8 +92,9 @@ BUILT_IN_FORGE_API_KEY=your-forge-api-key
 ## نشر على Railway
 
 1. اربط المستودع من GitHub في Railway
-2. أضف المتغيرات البيئية في **Variables**
-3. Railway يستخدم `railway.json` تلقائياً:
+2. **مهم:** أضف المتغير `NIXPACKS_NODE_VERSION=22` في Variables (Vite 7 يتطلب Node 22+)
+3. أضف باقي المتغيرات البيئية (DATABASE_URL, JWT_SECRET، إلخ)
+4. Railway يستخدم `railway.json` تلقائياً:
    - **Build:** `pnpm install && pnpm run build`
    - **Start:** `pnpm run start`
 
