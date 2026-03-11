@@ -68,7 +68,7 @@ export const LEVELS: Level[] = [
  */
 export function getStudentLevel(score: number): Level {
   const level = LEVELS.find((l) => score >= l.min && score <= l.max);
-  return level || LEVELS[0];
+  return level ?? LEVELS[0]!;
 }
 
 /**
@@ -89,6 +89,6 @@ export function getLevelProgress(score: number): number {
 export function getPointsToNextLevel(score: number): number {
   const level = getStudentLevel(score);
   if (level.max === Infinity) return 0;
-  
+
   return level.max - score + 1;
 }
