@@ -435,7 +435,7 @@ export default function AdminControl() {
   // Section label helper
   const sectionLabel = (section: number | null | undefined) => {
     if (!section) return "";
-    const labels: Record<number, string> = { 1: "أ", 2: "ب", 3: "ج", 4: "د" };
+    const labels: Record<number, string> = { 1: "أ", 2: "ب", 3: "ج", 4: "د", 5: "هـ", 6: "و" };
     return labels[section] || section.toString();
   };
 

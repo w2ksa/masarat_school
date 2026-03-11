@@ -3,9 +3,21 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Clock, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function VotingReport() {
   const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    const role = localStorage.getItem("userRole") || sessionStorage.getItem("userRole");
+    const isAuth = localStorage.getItem("isAuthenticated") || sessionStorage.getItem("isAuthenticated");
+    if (role !== "admin" || isAuth !== "true") {
+      toast.error("يجب تسجيل الدخول كمدير نظام");
+      setLocation("/login");
+    }
+  }, [setLocation]);
+
   const { data, isLoading } = trpc.getVotingReport.useQuery({});
 
   if (isLoading) {
