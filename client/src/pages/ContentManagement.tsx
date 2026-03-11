@@ -28,6 +28,8 @@ const SECTIONS = [
   { value: "2", label: "ب" },
   { value: "3", label: "ج" },
   { value: "4", label: "د" },
+  { value: "5", label: "هـ" },
+  { value: "6", label: "و" },
 ];
 
 export default function ContentManagement() {
@@ -134,7 +136,7 @@ export default function ContentManagement() {
   };
 
   const getSectionLabel = (section: number | null) => {
-    const labels: Record<number, string> = { 1: "أ", 2: "ب", 3: "ج", 4: "د" };
+    const labels: Record<number, string> = { 1: "أ", 2: "ب", 3: "ج", 4: "د", 5: "هـ", 6: "و" };
     return section ? labels[section] || section : "";
   };
 

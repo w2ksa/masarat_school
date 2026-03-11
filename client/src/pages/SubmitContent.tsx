@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { ArrowRight, Camera, CheckCircle, Lock, Upload, Video } from "lucide-react";
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
@@ -20,12 +20,14 @@ const GRADES = [
   { value: "سادس", label: "الصف السادس" },
 ];
 
-// Sections are stored as numbers in database (1, 2, 3, 4)
+// Sections are stored as numbers in database (1, 2, 3, 4, 5, 6)
 const SECTIONS = [
   { value: "1", label: "أ" },
   { value: "2", label: "ب" },
   { value: "3", label: "ج" },
   { value: "4", label: "د" },
+  { value: "5", label: "هـ" },
+  { value: "6", label: "و" },
 ];
 
 export default function SubmitContent() {
@@ -63,13 +65,22 @@ export default function SubmitContent() {
     return filtered.sort((a, b) => a.fullName.localeCompare(b.fullName, 'ar'));
   }, [students, selectedGrade, selectedSection]);
 
+  // Revoke blob URL when previewUrl changes or component unmounts (memory leak fix)
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   // Upload mutation
   const uploadMutation = trpc.content.upload.useMutation({
     onSuccess: () => {
       setIsSuccess(true);
+      setIsUploading(false);
       toast.success("تم إرسال المحتوى بنجاح! سيتم مراجعته من قبل المشرف");
     },
     onError: (error) => {
+      setIsUploading(false);
       toast.error(error.message || "حدث خطأ أثناء الرفع");
     },
   });
@@ -243,7 +254,7 @@ export default function SubmitContent() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex flex-col">
       {/* Header */}
       <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
-        <div className="container py-4">
+        <div className="container px-4 py-4">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
