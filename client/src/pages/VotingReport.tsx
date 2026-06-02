@@ -1,13 +1,15 @@
 import { trpc } from "@/lib/trpc";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2, XCircle, Clock, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function VotingReport() {
   const [, setLocation] = useLocation();
+  const [selectedPeriodId, setSelectedPeriodId] = useState<string>("__current__");
 
   useEffect(() => {
     const role = localStorage.getItem("userRole") || sessionStorage.getItem("userRole");
@@ -18,7 +20,12 @@ export default function VotingReport() {
     }
   }, [setLocation]);
 
-  const { data, isLoading } = trpc.getVotingReport.useQuery({});
+  // قائمة جميع فترات التصويت السابقة (لاسترجاع البيانات القديمة)
+  const { data: periods } = trpc.voting.listPeriods.useQuery();
+
+  const { data, isLoading } = trpc.getVotingReport.useQuery(
+    selectedPeriodId === "__current__" ? {} : { periodId: parseInt(selectedPeriodId) }
+  );
 
   if (isLoading) {
     return (
@@ -65,10 +72,26 @@ export default function VotingReport() {
               الفترة: {new Date(period.startDate).toLocaleDateString('ar-SA')} - {new Date(period.endDate).toLocaleDateString('ar-SA')}
             </p>
           </div>
-          <Button variant="outline" onClick={() => setLocation("/admin")} className="text-sm">
-            <ArrowRight className="w-4 h-4 ml-1" />
-            العودة
-          </Button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            {/* اختيار فترة التصويت — لعرض بيانات الأسابيع السابقة */}
+            <Select value={selectedPeriodId} onValueChange={setSelectedPeriodId}>
+              <SelectTrigger className="w-full sm:w-[260px] bg-white/10 border-white/20 text-white text-sm">
+                <SelectValue placeholder="اختر فترة التصويت" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__current__">الفترة الحالية</SelectItem>
+                {periods?.map((p: any) => (
+                  <SelectItem key={p.id} value={String(p.id)}>
+                    {`أسبوع ${p.weekNumber}/${p.year} — ${new Date(p.startDate).toLocaleDateString("ar-SA")} (${p.voteCount} صوت)${p.status === "open" ? " • مفتوح" : ""}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" onClick={() => setLocation("/admin")} className="text-sm">
+              <ArrowRight className="w-4 h-4 ml-1" />
+              العودة
+            </Button>
+          </div>
         </div>
 
         {/* Statistics */}

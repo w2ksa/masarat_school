@@ -22,7 +22,12 @@ import {
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   
-  const { data: stats, isLoading } = trpc.voting.getDashboardStats.useQuery();
+  // تحديث مباشر لإحصائيات التصويت حتى تظهر النتائج الجديدة فوراً
+  const { data: stats, isLoading } = trpc.voting.getDashboardStats.useQuery(undefined, {
+    staleTime: 10000,
+    refetchOnWindowFocus: true,
+    refetchInterval: 15000,
+  });
 
   // ألوان متناسقة للرسوم البيانية
   const GRADE_COLORS = {

@@ -321,6 +321,11 @@ export const appRouter = router({
       return await db.getCurrentVotingPeriod();
     }),
 
+    // قائمة بجميع فترات التصويت (الأحدث أولاً) مع عدد الأصوات — لاسترجاع البيانات السابقة
+    listPeriods: publicProcedure.query(async () => {
+      return await db.getAllVotingPeriods();
+    }),
+
     openVoting: publicProcedure
       .input(
         z.object({
@@ -331,11 +336,8 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        // Close any existing open voting periods
-        const currentPeriod = await db.getCurrentVotingPeriod();
-        if (currentPeriod) {
-          await db.closeVotingPeriod(currentPeriod.id);
-        }
+        // إغلاق جميع الفترات المفتوحة (وليس فترة واحدة) لتفادي تراكم أكثر من فترة مفتوحة
+        await db.closeAllOpenVotingPeriods();
 
         // Create new voting period
         await db.createVotingPeriod(input);
@@ -643,10 +645,14 @@ export const appRouter = router({
       }
 
       const periodId = input.periodId || currentPeriod.id;
+      // إرجاع بيانات الفترة المطلوبة فعلاً (وليس دائماً الأحدث) حتى تظهر تواريخها بشكل صحيح
+      const period = input.periodId
+        ? (await db.getVotingPeriodById(input.periodId)) || currentPeriod
+        : currentPeriod;
       const report = await db.getVotingReport(periodId);
 
       return {
-        period: currentPeriod,
+        period,
         report,
       };
     }),
