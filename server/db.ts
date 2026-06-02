@@ -625,6 +625,36 @@ export async function getDb() {
   return _db;
 }
 
+// التحقق من حالة الاتصال بقاعدة البيانات فعلياً (وليس فقط وجود الرابط)
+// يُستخدم لتنبيه المدير عند تشغيل الموقع بدون قاعدة بيانات (البيانات مؤقتة وتُفقد عند إعادة التشغيل)
+let _dbStatusCache: { connected: boolean; checkedAt: number } | null = null;
+export async function getDbStatus(): Promise<{ connected: boolean; hasUrl: boolean; reason?: string }> {
+  const hasUrl = !!process.env.DATABASE_URL;
+  // كاش لمدة 30 ثانية لتفادي فحص الاتصال في كل طلب
+  if (_dbStatusCache && Date.now() - _dbStatusCache.checkedAt < 30000) {
+    return { connected: _dbStatusCache.connected, hasUrl };
+  }
+
+  if (!hasUrl) {
+    _dbStatusCache = { connected: false, checkedAt: Date.now() };
+    return { connected: false, hasUrl: false, reason: "DATABASE_URL غير مضبوط" };
+  }
+
+  try {
+    const db = await getDb();
+    if (!db) {
+      _dbStatusCache = { connected: false, checkedAt: Date.now() };
+      return { connected: false, hasUrl: true, reason: "تعذّر إنشاء الاتصال" };
+    }
+    await db.execute(sql`SELECT 1`);
+    _dbStatusCache = { connected: true, checkedAt: Date.now() };
+    return { connected: true, hasUrl: true };
+  } catch (error: any) {
+    _dbStatusCache = { connected: false, checkedAt: Date.now() };
+    return { connected: false, hasUrl: true, reason: error?.message || "فشل الاتصال" };
+  }
+}
+
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
