@@ -16,19 +16,21 @@ const GRADE_COLORS = {
 const RANK_COLORS = ["#fbbf24", "#94a3b8", "#f97316", "#3b82f6", "#8b5cf6", "#ec4899", "#10b981", "#ef4444"];
 
 export function WeeklyStatsSection() {
+  // تحديث مباشر: تظهر التصويتات الجديدة خلال ثوانٍ دون الحاجة لإعادة تحميل الصفحة
   // @ts-ignore
   const { data: weeklyStats, isLoading } = trpc.voting.getWeeklyStats.useQuery(undefined, {
-    staleTime: 60000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchInterval: false,
+    staleTime: 10000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchInterval: 15000,
   });
 
   // @ts-ignore
   const { data: allStudents } = trpc.students.list.useQuery({ grade: undefined }, {
-    staleTime: 60000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    staleTime: 10000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchInterval: 15000,
   });
 
   // @ts-ignore

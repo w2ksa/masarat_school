@@ -978,11 +978,20 @@ export async function getAllAdmins() {
 export async function getCurrentVotingPeriod() {
   const db = await getDb();
   if (!db) {
-    return _inMemoryVotingPeriods.find(p => p.status === "open") || null;
+    // اختر أحدث فترة مفتوحة (وليس أول فترة) لضمان الاتساق مع العرض
+    const openPeriods = _inMemoryVotingPeriods.filter(p => p.status === "open");
+    if (openPeriods.length === 0) return null;
+    return [...openPeriods].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
   }
 
   const { votingPeriods } = await import("../drizzle/schema");
-  const result = await db.select().from(votingPeriods).where(eq(votingPeriods.status, "open")).limit(1);
+  // الترتيب حسب الأحدث لتفادي إرجاع فترة مفتوحة قديمة بشكل عشوائي
+  const result = await db
+    .select()
+    .from(votingPeriods)
+    .where(eq(votingPeriods.status, "open"))
+    .orderBy(desc(votingPeriods.createdAt))
+    .limit(1);
   return result.length > 0 ? result[0] : null;
 }
 
@@ -1040,6 +1049,24 @@ export async function closeVotingPeriod(periodId: number) {
 
   const { votingPeriods } = await import("../drizzle/schema");
   return await db.update(votingPeriods).set({ status: "closed" }).where(eq(votingPeriods.id, periodId));
+}
+
+// إغلاق جميع الفترات المفتوحة دفعة واحدة لمنع تراكم أكثر من فترة مفتوحة
+export async function closeAllOpenVotingPeriods() {
+  const db = await getDb();
+  if (!db) {
+    const now = new Date();
+    _inMemoryVotingPeriods.forEach(p => {
+      if (p.status === "open") {
+        p.status = "closed";
+        p.updatedAt = now;
+      }
+    });
+    return;
+  }
+
+  const { votingPeriods } = await import("../drizzle/schema");
+  return await db.update(votingPeriods).set({ status: "closed" }).where(eq(votingPeriods.status, "open"));
 }
 
 export async function getTeacherVotes(teacherNameId: number, periodId: number) {

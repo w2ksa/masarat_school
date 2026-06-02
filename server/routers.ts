@@ -331,11 +331,8 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        // Close any existing open voting periods
-        const currentPeriod = await db.getCurrentVotingPeriod();
-        if (currentPeriod) {
-          await db.closeVotingPeriod(currentPeriod.id);
-        }
+        // إغلاق جميع الفترات المفتوحة (وليس فترة واحدة) لتفادي تراكم أكثر من فترة مفتوحة
+        await db.closeAllOpenVotingPeriods();
 
         // Create new voting period
         await db.createVotingPeriod(input);

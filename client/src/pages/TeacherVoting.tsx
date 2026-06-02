@@ -42,9 +42,11 @@ export default function TeacherVoting() {
     onSuccess: () => {
       toast.success("تم إرسال التصويت بنجاح! تمت إضافة 10 نقاط لكل طالب");
       setSelectedStudents([]);
-      // Invalidate queries to refresh data
+      // تحديث جميع البيانات المرتبطة بالتصويت لتظهر النتائج فوراً في الموقع
       utils.students.list.invalidate();
       utils.voting.getCurrentPeriod.invalidate();
+      utils.voting.getWeeklyStats.invalidate();
+      utils.voting.getDashboardStats.invalidate();
     },
     onError: (error) => {
       toast.error(error.message || "حدث خطأ أثناء إرسال التصويت");
@@ -70,6 +72,11 @@ export default function TeacherVoting() {
   };
 
   const handleSubmitVotes = () => {
+    // منع الإرسال المزدوج عند الضغط أكثر من مرة
+    if (submitVotesMutation.isPending) {
+      return;
+    }
+
     if (selectedStudents.length !== 3) {
       toast.error("يجب اختيار 3 طلاب بالضبط");
       return;
@@ -185,8 +192,9 @@ export default function TeacherVoting() {
                 <Button
                   className="w-full mt-4"
                   onClick={handleSubmitVotes}
+                  disabled={submitVotesMutation.isPending}
                 >
-                  إرسال التصويت
+                  {submitVotesMutation.isPending ? "جاري الإرسال..." : "إرسال التصويت"}
                 </Button>
               )}
             </CardContent>
