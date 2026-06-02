@@ -1005,11 +1005,60 @@ export async function getLatestVotingPeriod() {
   }
 
   const { votingPeriods } = await import("../drizzle/schema");
-  const openResult = await db.select().from(votingPeriods).where(eq(votingPeriods.status, "open")).limit(1);
+  const openResult = await db
+    .select()
+    .from(votingPeriods)
+    .where(eq(votingPeriods.status, "open"))
+    .orderBy(desc(votingPeriods.createdAt))
+    .limit(1);
   if (openResult.length > 0) return openResult[0];
 
   const latestResult = await db.select().from(votingPeriods).orderBy(desc(votingPeriods.createdAt)).limit(1);
   return latestResult.length > 0 ? latestResult[0] : null;
+}
+
+// إرجاع جميع فترات التصويت (الأحدث أولاً) مع عدد الأصوات في كل فترة
+// تُستخدم لاسترجاع وعرض بيانات التصويتات السابقة في الموقع.
+export async function getAllVotingPeriods() {
+  const db = await getDb();
+  if (!db) {
+    return [..._inMemoryVotingPeriods]
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .map(p => ({
+        ...p,
+        voteCount: _inMemoryVotes.filter(v => v.votingPeriodId === p.id).length,
+      }));
+  }
+
+  const { votingPeriods } = await import("../drizzle/schema");
+  const periods = await db.select().from(votingPeriods).orderBy(desc(votingPeriods.createdAt));
+
+  // عدد الأصوات لكل فترة عبر تجميع واحد بدل استعلام لكل فترة
+  const counts = await db
+    .select({
+      votingPeriodId: teacherVotes.votingPeriodId,
+      voteCount: sql<number>`count(*)`,
+    })
+    .from(teacherVotes)
+    .groupBy(teacherVotes.votingPeriodId);
+
+  const countMap = new Map<number, number>();
+  for (const row of counts) {
+    countMap.set(row.votingPeriodId, Number(row.voteCount));
+  }
+
+  return periods.map(p => ({ ...p, voteCount: countMap.get(p.id) || 0 }));
+}
+
+export async function getVotingPeriodById(periodId: number) {
+  const db = await getDb();
+  if (!db) {
+    return _inMemoryVotingPeriods.find(p => p.id === periodId) || null;
+  }
+
+  const { votingPeriods } = await import("../drizzle/schema");
+  const result = await db.select().from(votingPeriods).where(eq(votingPeriods.id, periodId)).limit(1);
+  return result.length > 0 ? result[0] : null;
 }
 
 export async function createVotingPeriod(data: {
@@ -1230,8 +1279,27 @@ export async function updateStudentName(studentId: number, fullName: string) {
 export async function getVotingReport(periodId: number) {
   const db = await getDb();
   if (!db) {
-    console.warn("[Database] Cannot get voting report: database not available");
-    return [];
+    initInMemoryTeacherNames();
+    initInMemoryStudents();
+    const periodVotes = _inMemoryVotes.filter(v => v.votingPeriodId === periodId);
+    return _inMemoryTeacherNames
+      .slice()
+      .sort((a, b) => a.fullName.localeCompare(b.fullName, "ar"))
+      .map(teacher => {
+        const votes = periodVotes
+          .filter(v => v.teacherNameId === teacher.id)
+          .sort((a, b) => a.voteRank - b.voteRank);
+        return {
+          teacherId: teacher.id,
+          teacherName: teacher.fullName,
+          hasVoted: votes.length > 0,
+          votedStudents: votes.map(v => {
+            const s = _inMemoryStudents.find(st => st.id === v.studentId);
+            return s ? s.fullName : `#${v.studentId}`;
+          }),
+          votedAt: votes.length > 0 ? votes[0].createdAt : null,
+        };
+      });
   }
 
   // Get all teacher names

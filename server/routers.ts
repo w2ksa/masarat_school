@@ -321,6 +321,11 @@ export const appRouter = router({
       return await db.getCurrentVotingPeriod();
     }),
 
+    // قائمة بجميع فترات التصويت (الأحدث أولاً) مع عدد الأصوات — لاسترجاع البيانات السابقة
+    listPeriods: publicProcedure.query(async () => {
+      return await db.getAllVotingPeriods();
+    }),
+
     openVoting: publicProcedure
       .input(
         z.object({
@@ -640,10 +645,14 @@ export const appRouter = router({
       }
 
       const periodId = input.periodId || currentPeriod.id;
+      // إرجاع بيانات الفترة المطلوبة فعلاً (وليس دائماً الأحدث) حتى تظهر تواريخها بشكل صحيح
+      const period = input.periodId
+        ? (await db.getVotingPeriodById(input.periodId)) || currentPeriod
+        : currentPeriod;
       const report = await db.getVotingReport(periodId);
 
       return {
-        period: currentPeriod,
+        period,
         report,
       };
     }),
