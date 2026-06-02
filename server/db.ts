@@ -613,13 +613,39 @@ function getInMemoryStudents(grade?: string, section?: number): InMemoryStudent[
 }
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
+// استخراج رابط قاعدة البيانات من المتغيرات الشائعة.
+// Railway قد يوفّر الرابط باسم MYSQL_URL أو كمتغيرات منفصلة (MYSQLHOST...)
+// بدل DATABASE_URL، وهذا سبب شائع لعدم الاتصال وفقدان البيانات.
+export function resolveDatabaseUrl(): string {
+  const direct =
+    process.env.DATABASE_URL ||
+    process.env.MYSQL_URL ||
+    process.env.MYSQL_PUBLIC_URL ||
+    process.env.DATABASE_PUBLIC_URL;
+  if (direct) return direct;
+
+  const host = process.env.MYSQLHOST || process.env.MYSQL_HOST;
+  const user = process.env.MYSQLUSER || process.env.MYSQL_USER;
+  const password = process.env.MYSQLPASSWORD || process.env.MYSQL_PASSWORD;
+  const database = process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE;
+  const port = process.env.MYSQLPORT || process.env.MYSQL_PORT || "3306";
+  if (host && user && database) {
+    const pass = password ? `:${encodeURIComponent(password)}` : "";
+    return `mysql://${user}${pass}@${host}:${port}/${database}`;
+  }
+  return "";
+}
+
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
-    try {
-      _db = drizzle(process.env.DATABASE_URL);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
+  if (!_db) {
+    const url = resolveDatabaseUrl();
+    if (url) {
+      try {
+        _db = drizzle(url);
+      } catch (error) {
+        console.warn("[Database] Failed to connect:", error);
+        _db = null;
+      }
     }
   }
   return _db;
@@ -629,7 +655,7 @@ export async function getDb() {
 // يُستخدم لتنبيه المدير عند تشغيل الموقع بدون قاعدة بيانات (البيانات مؤقتة وتُفقد عند إعادة التشغيل)
 let _dbStatusCache: { connected: boolean; checkedAt: number } | null = null;
 export async function getDbStatus(): Promise<{ connected: boolean; hasUrl: boolean; reason?: string }> {
-  const hasUrl = !!process.env.DATABASE_URL;
+  const hasUrl = !!resolveDatabaseUrl();
   // كاش لمدة 30 ثانية لتفادي فحص الاتصال في كل طلب
   if (_dbStatusCache && Date.now() - _dbStatusCache.checkedAt < 30000) {
     return { connected: _dbStatusCache.connected, hasUrl };

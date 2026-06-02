@@ -35,8 +35,25 @@ async function startServer() {
   const port = parseInt(process.env.PORT || "3000");
   const host = process.env.HOST || "0.0.0.0";
 
-  server.listen(port, host, () => {
+  server.listen(port, host, async () => {
     console.log(`Server running on http://${host}:${port}/`);
+
+    // طباعة حالة الاتصال بقاعدة البيانات بوضوح في سجلات التشغيل
+    try {
+      const { getDbStatus } = await import("../db");
+      const status = await getDbStatus();
+      if (status.connected) {
+        console.log("[Database] ✅ متصل بقاعدة البيانات — البيانات تُحفظ بشكل دائم.");
+      } else {
+        console.warn(
+          `[Database] ⚠️  غير متصل بقاعدة البيانات (${status.reason || "سبب غير معروف"}). ` +
+            "الموقع يعمل بنسخة مؤقتة في الذاكرة وستُفقد البيانات عند إعادة التشغيل. " +
+            "اضبط DATABASE_URL (أو اربط خدمة MySQL في Railway)."
+        );
+      }
+    } catch (e) {
+      console.warn("[Database] تعذّر فحص حالة الاتصال:", e);
+    }
   });
 }
 
