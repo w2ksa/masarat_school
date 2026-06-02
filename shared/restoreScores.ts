@@ -40,3 +40,37 @@ export function planScoreRestore(dbStudents: DbStudentLite[], seed: SeedStudent[
 
   return { updates, unchanged, notFound };
 }
+
+/**
+ * يحسب خطة تعيين الدرجات بالضبط من قائمة موثوقة (الاسم → الدرجة).
+ * - المطابقة بالاسم الكامل.
+ * - يضع الدرجة بالضبط كما في القائمة (قد يرفع أو يخفض القيمة الحالية).
+ * - لا يمسّ أي طالب غير موجود في القائمة (يبقى كما هو).
+ * - من ليس له مطابقة في القاعدة يُدرج في notFound (لا يُضاف، لا يُحذف).
+ */
+export function planExactScores(
+  dbStudents: DbStudentLite[],
+  list: { name: string; score: number }[]
+): RestorePlan {
+  const byName = new Map<string, DbStudentLite>();
+  for (const r of dbStudents) byName.set(r.fullName.trim(), r);
+
+  const updates: RestorePlan["updates"] = [];
+  const notFound: string[] = [];
+  let unchanged = 0;
+
+  for (const item of list) {
+    const cur = byName.get(item.name.trim());
+    if (!cur) {
+      notFound.push(item.name);
+      continue;
+    }
+    if ((cur.score || 0) !== item.score) {
+      updates.push({ id: cur.id, fullName: item.name, from: cur.score || 0, to: item.score });
+    } else {
+      unchanged++;
+    }
+  }
+
+  return { updates, unchanged, notFound };
+}
