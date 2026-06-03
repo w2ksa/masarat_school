@@ -5,7 +5,7 @@ export type SeedStudent = { fullName: string; grade: string; section: number; sc
 
 export const STUDENTS_SEED: SeedStudent[] = [
     // أول أ (section 1)
-    { fullName: "أحمد حسام الوادعي", grade: "أول", section: 1, score: 54 },
+    { fullName: "أحمد حسام الوادعي", grade: "أول", section: 1, score: 64 },
     { fullName: "أوس علي الشهري", grade: "أول", section: 1, score: 58 },
     { fullName: "بسام محمد القرني", grade: "أول", section: 1, score: 50 },
     { fullName: "تركي عبدالعزيز القحطاني", grade: "أول", section: 1, score: 58 },
@@ -56,8 +56,8 @@ export const STUDENTS_SEED: SeedStudent[] = [
     { fullName: "مهند أيمن آل مطاعن", grade: "أول", section: 3, score: 56 },
     { fullName: "يوسف محمد عسيري", grade: "أول", section: 3, score: 62 },
     // ثاني أ (section 1)
-    { fullName: "أسامه احمد ابراهيم عسيري", grade: "ثاني", section: 1, score: 60 },
-    { fullName: "أسر سليمان بن محمد الشرقي", grade: "ثاني", section: 1, score: 60 },
+    { fullName: "أسامه احمد ابراهيم عسيري", grade: "ثاني", section: 1, score: 70 },
+    { fullName: "أسر سليمان بن محمد الشرقي", grade: "ثاني", section: 1, score: 70 },
     { fullName: "أنس عبدالله محمد عوض", grade: "ثاني", section: 1, score: 62 },
     { fullName: "ثامر محمد قاسم عسيري", grade: "ثاني", section: 1, score: 60 },
     { fullName: "ريان علي احمد الأسمري", grade: "ثاني", section: 1, score: 62 },
@@ -94,7 +94,7 @@ export const STUDENTS_SEED: SeedStudent[] = [
     { fullName: "يزن محمد عبدالرحمن عسيري", grade: "ثاني", section: 2, score: 68 },
     { fullName: "يزيد محمد سعيد الشطفان", grade: "ثاني", section: 2, score: 58 },
     // ثاني ج (section 3)
-    { fullName: "اياس احمد سليمان الجابري", grade: "ثاني", section: 3, score: 60 },
+    { fullName: "اياس احمد سليمان الجابري", grade: "ثاني", section: 3, score: 70 },
     { fullName: "تركي هادي بن علي القحطاني", grade: "ثاني", section: 3, score: 62 },
     { fullName: "راكان محمد سعد الوادعي", grade: "ثاني", section: 3, score: 64 },
     { fullName: "رياض علي يحي الزيادي", grade: "ثاني", section: 3, score: 64 },

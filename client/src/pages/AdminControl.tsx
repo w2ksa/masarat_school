@@ -231,8 +231,8 @@ export default function AdminControl() {
       utils.students.list.invalidate();
       utils.students.topStudents.invalidate();
       utils.students.getLevelStats.invalidate();
-      const notFoundMsg = data.notFound?.length ? ` — تعذّر إيجاد: ${data.notFound.join("، ")}` : "";
-      toast.success(`تم تطبيق درجات الطلاب المميّزين: حُدّث ${data.updatedCount}، دون تغيير ${data.unchangedCount}${notFoundMsg}`);
+      const regMsg = data.registeredCount ? `سُجّل ${data.registeredCount} طالب جديد، ` : "";
+      toast.success(`تم تطبيق درجات الطلاب المميّزين: ${regMsg}حُدّث ${data.updatedCount}، دون تغيير ${data.unchangedCount}`);
     },
     onError: (error: any) => {
       toast.error(error.message || "حدث خطأ أثناء تطبيق الدرجات");

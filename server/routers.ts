@@ -214,14 +214,24 @@ export const appRouter = router({
         (ctx.req.headers["x-forwarded-for"] as string) || ctx.req.socket?.remoteAddress || "غير معروف";
 
       const updated: { name: string; from: number; to: number }[] = [];
-      const notFound: string[] = [];
+      const registered: string[] = [];
 
       for (const item of FEATURED_SCORES) {
         const student: any = byName.get(item.name.trim());
+
+        // الطالب غير مسجّل → سجّله (إضافة طالب جديد بصفّه وفصله ودرجته)
         if (!student) {
-          notFound.push(item.name);
+          await db.addStudent({
+            fullName: item.name,
+            grade: (item as any).grade,
+            section: (item as any).section,
+            score: item.score,
+          } as any);
+          registered.push(item.name);
           continue;
         }
+
+        // موجود → حدّث درجته إن لزم
         const previousScore = student.score || 0;
         if (previousScore === item.score) continue;
 
@@ -244,10 +254,11 @@ export const appRouter = router({
       return {
         success: true,
         total: FEATURED_SCORES.length,
+        registeredCount: registered.length,
         updatedCount: updated.length,
-        unchangedCount: FEATURED_SCORES.length - updated.length - notFound.length,
+        unchangedCount: FEATURED_SCORES.length - updated.length - registered.length,
+        registered,
         updated,
-        notFound,
       };
     }),
 
