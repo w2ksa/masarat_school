@@ -14,18 +14,24 @@ function publicCtx(): TrpcContext {
 const caller = appRouter.createCaller(publicCtx());
 
 describe("applyFeaturedScores — تطبيق درجات الطلاب المميّزين", () => {
-  it("يعيّن درجات الـ17 طالباً بالضبط كما كُتبت", async () => {
+  it("يسجّل/يحدّث الـ17 طالباً فيصبحون جميعاً مسجّلين بدرجاتهم الصحيحة", async () => {
     const res: any = await caller.students.applyFeaturedScores();
     expect(res.success).toBe(true);
     expect(res.total).toBe(17);
-    // كل الأسماء موجودة في الكشف (لا أحد غير موجود)
-    expect(res.notFound).toEqual([]);
 
-    // التحقق أن درجة كل طالب في القاعدة أصبحت مطابقة تماماً للمكتوب
+    // بعد التطبيق: كل الـ17 مسجّلون في القائمة بدرجاتهم بالضبط
     const students = await caller.students.list({ grade: undefined } as any);
     const byName = new Map(students.map((s: any) => [s.fullName.trim(), s.score]));
     for (const f of FEATURED_SCORES) {
       expect(byName.get(f.name.trim())).toBe(f.score);
+    }
+  });
+
+  it("كل الـ17 يحملون صفّاً وفصلاً (جاهزون للتسجيل كطلاب)", () => {
+    for (const f of FEATURED_SCORES as any[]) {
+      expect(typeof f.grade).toBe("string");
+      expect(f.grade.length).toBeGreaterThan(0);
+      expect(typeof f.section).toBe("number");
     }
   });
 
