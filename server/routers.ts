@@ -202,6 +202,55 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    // تطبيق درجات الطلاب المميّزين (17 طالباً) بالضبط بالمطابقة بالاسم.
+    // لا يمسّ أي طالب آخر، ولا يحذف شيئاً، وآمن للتكرار.
+    applyFeaturedScores: publicProcedure.mutation(async ({ ctx }) => {
+      const { FEATURED_SCORES } = await import("@shared/featuredScores");
+      const allStudents = await db.getAllStudents();
+      const byName = new Map(allStudents.map((s: any) => [s.fullName.trim(), s]));
+
+      const userAgent = ctx.req.headers["user-agent"] || "غير معروف";
+      const ipAddress =
+        (ctx.req.headers["x-forwarded-for"] as string) || ctx.req.socket?.remoteAddress || "غير معروف";
+
+      const updated: { name: string; from: number; to: number }[] = [];
+      const notFound: string[] = [];
+
+      for (const item of FEATURED_SCORES) {
+        const student: any = byName.get(item.name.trim());
+        if (!student) {
+          notFound.push(item.name);
+          continue;
+        }
+        const previousScore = student.score || 0;
+        if (previousScore === item.score) continue;
+
+        await db.updateStudentScore(student.id, item.score, undefined);
+        await db.logActivity({
+          activityType: item.score >= previousScore ? "add_score" : "deduct_score",
+          performedBy: "مدير النظام",
+          studentId: student.id,
+          studentName: student.fullName,
+          pointsChange: Math.abs(item.score - previousScore),
+          previousScore,
+          newScore: item.score,
+          details: JSON.stringify({ reason: "تطبيق درجات الطلاب المميّزين" }),
+          userAgent,
+          ipAddress,
+        });
+        updated.push({ name: item.name, from: previousScore, to: item.score });
+      }
+
+      return {
+        success: true,
+        total: FEATURED_SCORES.length,
+        updatedCount: updated.length,
+        unchangedCount: FEATURED_SCORES.length - updated.length - notFound.length,
+        updated,
+        notFound,
+      };
+    }),
+
     addBulkScore: publicProcedure
       .input(
         z.object({

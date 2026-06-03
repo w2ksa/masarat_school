@@ -225,6 +225,26 @@ export default function AdminControl() {
     },
   });
 
+  // @ts-ignore
+  const applyFeaturedMutation = trpc.students.applyFeaturedScores.useMutation({
+    onSuccess: (data: any) => {
+      utils.students.list.invalidate();
+      utils.students.topStudents.invalidate();
+      utils.students.getLevelStats.invalidate();
+      const notFoundMsg = data.notFound?.length ? ` — تعذّر إيجاد: ${data.notFound.join("، ")}` : "";
+      toast.success(`تم تطبيق درجات الطلاب المميّزين: حُدّث ${data.updatedCount}، دون تغيير ${data.unchangedCount}${notFoundMsg}`);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "حدث خطأ أثناء تطبيق الدرجات");
+    },
+  });
+
+  const handleApplyFeatured = () => {
+    if (confirm("سيتم تعيين درجات الطلاب الـ17 المميّزين (160 إلى 100) بالضبط. لن يتأثر أي طالب آخر. متابعة؟")) {
+      applyFeaturedMutation.mutate();
+    }
+  };
+
   // Bulk category mutation
   const bulkCategoryMutation = trpc.bulkCategory.bulkApply.useMutation({
     onSuccess: (data) => {
@@ -947,6 +967,22 @@ export default function AdminControl() {
                   <p className="text-sm text-slate-300">
                     عند فتح التصويت، سيتمكن المعلمون من اختيار 3 طلاب لمدة أسبوع.
                   </p>
+                </div>
+
+                {/* تطبيق درجات الطلاب المميّزين */}
+                <div className="p-4 rounded-lg bg-amber-900/20 border border-amber-700">
+                  <h4 className="font-semibold text-white mb-1">درجات الطلاب المميّزين (17 طالباً)</h4>
+                  <p className="text-sm text-slate-300 mb-3">
+                    يعيّن درجات الـ17 طالباً (من 160 إلى 100) بالضبط. لا يؤثر على أي طالب آخر ولا يحذف شيئاً.
+                  </p>
+                  <Button
+                    onClick={handleApplyFeatured}
+                    disabled={applyFeaturedMutation.isPending}
+                    className="bg-amber-600 hover:bg-amber-700"
+                  >
+                    <Check className="w-4 h-4 ml-2" />
+                    {applyFeaturedMutation.isPending ? "جاري التطبيق..." : "تطبيق درجات الطلاب المميّزين"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
