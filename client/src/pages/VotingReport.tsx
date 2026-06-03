@@ -2,6 +2,7 @@ import { trpc } from "@/lib/trpc";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DbStatusBanner } from "@/components/DbStatusBanner";
 import { CheckCircle2, XCircle, Clock, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
@@ -21,10 +22,18 @@ export default function VotingReport() {
   }, [setLocation]);
 
   // قائمة جميع فترات التصويت السابقة (لاسترجاع البيانات القديمة)
-  const { data: periods } = trpc.voting.listPeriods.useQuery();
+  const { data: periods } = trpc.voting.listPeriods.useQuery(undefined, {
+    refetchInterval: 15000,
+  });
 
+  // تحديث مباشر: تظهر أصوات المعلمين في التقرير خلال ثوانٍ دون إعادة تحميل
   const { data, isLoading } = trpc.getVotingReport.useQuery(
-    selectedPeriodId === "__current__" ? {} : { periodId: parseInt(selectedPeriodId) }
+    selectedPeriodId === "__current__" ? {} : { periodId: parseInt(selectedPeriodId) },
+    {
+      staleTime: 5000,
+      refetchOnWindowFocus: true,
+      refetchInterval: 10000,
+    }
   );
 
   if (isLoading) {
@@ -62,8 +71,9 @@ export default function VotingReport() {
   const percentage = totalCount > 0 ? Math.round((votedCount / totalCount) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4 sm:p-8">
-      <div className="container mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      <DbStatusBanner />
+      <div className="container mx-auto p-4 sm:p-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>

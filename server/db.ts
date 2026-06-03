@@ -2,6 +2,7 @@ import { eq, and, or, desc, inArray, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, teachers, InsertTeacher, educationalFiles, InsertEducationalFile, notifications, InsertNotification, students, InsertStudent, teacherNames, teacherVotes, votingPeriods, activityLog, InsertActivityLog, studentContent, InsertStudentContent, systemSettings, InsertSystemSetting, scoreCategories, InsertScoreCategory, scoreHistory, InsertScoreHistory } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import { STUDENTS_SEED } from '@shared/studentsSeed';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -139,447 +140,7 @@ function initInMemoryStudents() {
   if (_inMemoryInitialized) return;
   _inMemoryInitialized = true;
   const now = new Date();
-  const rawStudents = [
-    // أول أ (section 1)
-    { fullName: "أحمد حسام الوادعي", grade: "أول", section: 1, score: 54 },
-    { fullName: "أوس علي الشهري", grade: "أول", section: 1, score: 58 },
-    { fullName: "بسام محمد القرني", grade: "أول", section: 1, score: 50 },
-    { fullName: "تركي عبدالعزيز القحطاني", grade: "أول", section: 1, score: 58 },
-    { fullName: "ثنيان محمد آل صالح", grade: "أول", section: 1, score: 62 },
-    { fullName: "خالد هادي عسيري", grade: "أول", section: 1, score: 58 },
-    { fullName: "سعود يحيى محمد", grade: "أول", section: 1, score: 62 },
-    { fullName: "عبدالسلام محمد", grade: "أول", section: 1, score: 64 },
-    { fullName: "عمر إبراهيم عسيري", grade: "أول", section: 1, score: 62 },
-    { fullName: "فارس عبدالإله الحنيشي", grade: "أول", section: 1, score: 64 },
-    { fullName: "محمد عبدالكريم أحمد خالد", grade: "أول", section: 1, score: 64 },
-    { fullName: "مصعب عبدالكريم آل جبران", grade: "أول", section: 1, score: 60 },
-    { fullName: "نواف ظافر العلياني", grade: "أول", section: 1, score: 62 },
-    { fullName: "نواف عبدالرحمن السفياني", grade: "أول", section: 1, score: 64 },
-    { fullName: "هيثم علي القحطاني", grade: "أول", section: 1, score: 56 },
-    { fullName: "ياسر مشهور عسيري", grade: "أول", section: 1, score: 64 },
-    // أول ب (section 2)
-    { fullName: "أصيل صالح القحطاني", grade: "أول", section: 2, score: 62 },
-    { fullName: "بدر فيصل طبيقي", grade: "أول", section: 2, score: 56 },
-    { fullName: "بندر حمد القحطاني", grade: "أول", section: 2, score: 60 },
-    { fullName: "تركي محمد الزهراني", grade: "أول", section: 2, score: 60 },
-    { fullName: "تركي محمد العمري", grade: "أول", section: 2, score: 60 },
-    { fullName: "حسن فارس علي", grade: "أول", section: 2, score: 56 },
-    { fullName: "راكان يحيى عسيري", grade: "أول", section: 2, score: 62 },
-    { fullName: "سلطان عبدالله مخفور", grade: "أول", section: 2, score: 60 },
-    { fullName: "عبدالعزيز عبدالله آل حمود", grade: "أول", section: 2, score: 60 },
-    { fullName: "عبدالعزيز محمد آل ناجي", grade: "أول", section: 2, score: 58 },
-    { fullName: "عماد إبراهيم عسيري", grade: "أول", section: 2, score: 58 },
-    { fullName: "عمر محمد عبدالله", grade: "أول", section: 2, score: 60 },
-    { fullName: "فارس عبدالعزيز الشهراني", grade: "أول", section: 2, score: 56 },
-    { fullName: "محمد عبدالله عسيري", grade: "أول", section: 2, score: 54 },
-    { fullName: "هيثم عبدالله آل حنش", grade: "أول", section: 2, score: 62 },
-    { fullName: "يحيى عبدالرحمن يحيى عسيري", grade: "أول", section: 2, score: 60 },
-    // أول ج (section 3)
-    { fullName: "أحمد سلطان عسيري", grade: "أول", section: 3, score: 60 },
-    { fullName: "إلياس أسامة المصطفى", grade: "أول", section: 3, score: 62 },
-    { fullName: "باسل سعود الزهراني", grade: "أول", section: 3, score: 60 },
-    { fullName: "جابر علي جابر", grade: "أول", section: 3, score: 56 },
-    { fullName: "حاتم محمد الراقدي", grade: "أول", section: 3, score: 58 },
-    { fullName: "سعود ناصر الشهري", grade: "أول", section: 3, score: 62 },
-    { fullName: "عبدالله سعيد القحطاني", grade: "أول", section: 3, score: 62 },
-    { fullName: "علي أحمد الربعي", grade: "أول", section: 3, score: 58 },
-    { fullName: "عمار محمد المهجري", grade: "أول", section: 3, score: 62 },
-    { fullName: "فهد حسن عسيري", grade: "أول", section: 3, score: 52 },
-    { fullName: "فيصل فهد القيسي", grade: "أول", section: 3, score: 62 },
-    { fullName: "لؤي سلطان الفيفي", grade: "أول", section: 3, score: 60 },
-    { fullName: "محمد عبدالعزيز القحطاني", grade: "أول", section: 3, score: 58 },
-    { fullName: "معن صالح الجواهرة", grade: "أول", section: 3, score: 62 },
-    { fullName: "مهند أيمن آل مطاعن", grade: "أول", section: 3, score: 56 },
-    { fullName: "يوسف محمد عسيري", grade: "أول", section: 3, score: 62 },
-    // ثاني أ (section 1)
-    { fullName: "أسامه احمد ابراهيم عسيري", grade: "ثاني", section: 1, score: 60 },
-    { fullName: "أسر سليمان بن محمد الشرقي", grade: "ثاني", section: 1, score: 60 },
-    { fullName: "أنس عبدالله محمد عوض", grade: "ثاني", section: 1, score: 62 },
-    { fullName: "ثامر محمد قاسم عسيري", grade: "ثاني", section: 1, score: 60 },
-    { fullName: "ريان علي احمد الأسمري", grade: "ثاني", section: 1, score: 62 },
-    { fullName: "سعد محمد سعد عسيري", grade: "ثاني", section: 1, score: 60 },
-    { fullName: "سعيد محمد سعيد العكاسي", grade: "ثاني", section: 1, score: 56 },
-    { fullName: "عبدالله احمد حسن الهيزعي", grade: "ثاني", section: 1, score: 60 },
-    { fullName: "عزام يحي رشيد آل فرحان", grade: "ثاني", section: 1, score: 56 },
-    { fullName: "علي عبدالرحمن محمد آل سليم", grade: "ثاني", section: 1, score: 56 },
-    { fullName: "عماد عبدالرحمن محمد آل قهيب", grade: "ثاني", section: 1, score: 62 },
-    { fullName: "فيصل فايز عوض بن ظفره", grade: "ثاني", section: 1, score: 60 },
-    { fullName: "محمد أحمد محمد الشهري", grade: "ثاني", section: 1, score: 58 },
-    { fullName: "ناصر خالد علي عسيري", grade: "ثاني", section: 1, score: 58 },
-    { fullName: "نهار نايف عبد الله عسيري", grade: "ثاني", section: 1, score: 60 },
-    // ثاني ب (section 2)
-    { fullName: "أبان عبدالله سعيد عسيري", grade: "ثاني", section: 2, score: 58 },
-    { fullName: "أحمد رائد احمد الزهراني", grade: "ثاني", section: 2, score: 68 },
-    { fullName: "أحمد عبدالكريم احمد هيجان", grade: "ثاني", section: 2, score: 66 },
-    { fullName: "باسل علي عوض آل عيسى", grade: "ثاني", section: 2, score: 64 },
-    { fullName: "بدر عبدالكريم احمد هيجان", grade: "ثاني", section: 2, score: 66 },
-    { fullName: "جسار عائض محمد عسيري", grade: "ثاني", section: 2, score: 64 },
-    { fullName: "حاتم علي حنبص آل موسى", grade: "ثاني", section: 2, score: 50 },
-    { fullName: "خالد سعيد بن عبدالله الاسمري", grade: "ثاني", section: 2, score: 66 },
-    { fullName: "رائد خالد علي عسيري", grade: "ثاني", section: 2, score: 60 },
-    { fullName: "سطام محمد عبدالله القحطاني", grade: "ثاني", section: 2, score: 66 },
-    { fullName: "سعد سعيد ابن عبدالله القحطاني", grade: "ثاني", section: 2, score: 64 },
-    { fullName: "عبدالرحمن ريان عبدالرحمن اليحيا", grade: "ثاني", section: 2, score: 60 },
-    { fullName: "علي محمد علي آل منيف", grade: "ثاني", section: 2, score: 62 },
-    { fullName: "عمر حسين سفر آل ثابت", grade: "ثاني", section: 2, score: 60 },
-    { fullName: "فيصل مشبب الأحمري", grade: "ثاني", section: 2, score: 62 },
-    { fullName: "محمد مريع سعد", grade: "ثاني", section: 2, score: 64 },
-    { fullName: "مشعل توفيق سعيد الاحمري", grade: "ثاني", section: 2, score: 66 },
-    { fullName: "ناصر عبدالله ناصر الشهراني", grade: "ثاني", section: 2, score: 66 },
-    { fullName: "ناصر محمد ناصر الشهراني", grade: "ثاني", section: 2, score: 62 },
-    { fullName: "يزن محمد عبدالرحمن عسيري", grade: "ثاني", section: 2, score: 68 },
-    { fullName: "يزيد محمد سعيد الشطفان", grade: "ثاني", section: 2, score: 58 },
-    // ثاني ج (section 3)
-    { fullName: "اياس احمد سليمان الجابري", grade: "ثاني", section: 3, score: 60 },
-    { fullName: "تركي هادي بن علي القحطاني", grade: "ثاني", section: 3, score: 62 },
-    { fullName: "راكان محمد سعد الوادعي", grade: "ثاني", section: 3, score: 64 },
-    { fullName: "رياض علي يحي الزيادي", grade: "ثاني", section: 3, score: 64 },
-    { fullName: "زياد علي بن سعود عسيري", grade: "ثاني", section: 3, score: 40 },
-    { fullName: "عارف علي احمد آل نيران", grade: "ثاني", section: 3, score: 58 },
-    { fullName: "علي صالح خلوفه الاحمري", grade: "ثاني", section: 3, score: 54 },
-    { fullName: "علي عبدالله علي ال هماس", grade: "ثاني", section: 3, score: 62 },
-    { fullName: "فارس سعيد عبدالله القحطاني", grade: "ثاني", section: 3, score: 62 },
-    { fullName: "كنان علي محمد عسيري", grade: "ثاني", section: 3, score: 60 },
-    { fullName: "محمد علي بن حسن عسيري", grade: "ثاني", section: 3, score: 64 },
-    { fullName: "نواف عادل بن ناصر العسيري", grade: "ثاني", section: 3, score: 52 },
-    { fullName: "هتان محمد بن علي زامل", grade: "ثاني", section: 3, score: 58 },
-    { fullName: "يحيى علي بن يحيى ال شلوان", grade: "ثاني", section: 3, score: 66 },
-    // ثالث أ (section 1)
-    { fullName: "باسل محمد سعيد القحطاني", grade: "ثالث", section: 1, score: 60 },
-    { fullName: "بدر ماجد علي العسيري", grade: "ثالث", section: 1, score: 58 },
-    { fullName: "تميم طارق حسن القحطاني", grade: "ثالث", section: 1, score: 58 },
-    { fullName: "تميم مبارك بن فهد القحطاني", grade: "ثالث", section: 1, score: 52 },
-    { fullName: "جاسر احمد ابن صالح عسيري", grade: "ثالث", section: 1, score: 60 },
-    { fullName: "حمود عبدالرحمن جرمان الاسمري", grade: "ثالث", section: 1, score: 62 },
-    { fullName: "رويد عبدالله سعيد محروس", grade: "ثالث", section: 1, score: 52 },
-    { fullName: "زياد عبدالله محمد الشهراني", grade: "ثالث", section: 1, score: 56 },
-    { fullName: "سلمان محمد ناصر آل احمد", grade: "ثالث", section: 1, score: 54 },
-    { fullName: "عبدالاله احمد حسن الفهي", grade: "ثالث", section: 1, score: 60 },
-    { fullName: "عز محمد مرعي القرني", grade: "ثالث", section: 1, score: 64 },
-    { fullName: "علي احمد ماطر ال شواف", grade: "ثالث", section: 1, score: 62 },
-    { fullName: "علي محمد علي الشديدي", grade: "ثالث", section: 1, score: 62 },
-    { fullName: "علي منصور عامر القرني", grade: "ثالث", section: 1, score: 54 },
-    { fullName: "عمر احمد ماطر ال شواف", grade: "ثالث", section: 1, score: 62 },
-    { fullName: "مؤيد عبدالرحمن علي الشهري", grade: "ثالث", section: 1, score: 58 },
-    { fullName: "مراد سعيد عبدالرحمن عسيري", grade: "ثالث", section: 1, score: 48 },
-    { fullName: "مشعل عبدالله يحيى الشهراني", grade: "ثالث", section: 1, score: 60 },
-    { fullName: "معاذ ظافر عايض القحطاني", grade: "ثالث", section: 1, score: 60 },
-    { fullName: "نواف ماجد حمود الحسام", grade: "ثالث", section: 1, score: 60 },
-    { fullName: "هشام محمد منصور العسيري", grade: "ثالث", section: 1, score: 58 },
-    { fullName: "هيثم محمد ابراهيم آل مطاعن", grade: "ثالث", section: 1, score: 58 },
-    { fullName: "يحيى جبران يحيى آل جحدل", grade: "ثالث", section: 1, score: 64 },
-    { fullName: "يزن أنس بن ابراهيم علوان", grade: "ثالث", section: 1, score: 62 },
-    { fullName: "يزيد يحيى سعد عسيري", grade: "ثالث", section: 1, score: 60 },
-    // ثالث ب (section 2)
-    { fullName: "اسامه مهند سعيد عسيري", grade: "ثالث", section: 2, score: 54 },
-    { fullName: "بتال علي سابر الاسمري", grade: "ثالث", section: 2, score: 64 },
-    { fullName: "حسن علي حسن آل عدينان", grade: "ثالث", section: 2, score: 62 },
-    { fullName: "خالد سعد محمد عسيري", grade: "ثالث", section: 2, score: 58 },
-    { fullName: "رائد احمد علي القحطاني", grade: "ثالث", section: 2, score: 64 },
-    { fullName: "راكان عبدالله احمد الشهري", grade: "ثالث", section: 2, score: 68 },
-    { fullName: "زايد عبدالله مبارك الشهراني", grade: "ثالث", section: 2, score: 58 },
-    { fullName: "زياد محمد حسن القحطاني", grade: "ثالث", section: 2, score: 58 },
-    { fullName: "سعود تركي علي الاسمري", grade: "ثالث", section: 2, score: 60 },
-    { fullName: "سعيد علي ابن يحي بن شبعان", grade: "ثالث", section: 2, score: 62 },
-    { fullName: "سعيد محمد حسن قحطاني", grade: "ثالث", section: 2, score: 58 },
-    { fullName: "سلمان مريع سعد هياش", grade: "ثالث", section: 2, score: 62 },
-    { fullName: "سند ناصر محمد علاي", grade: "ثالث", section: 2, score: 62 },
-    { fullName: "سيف ناصر محمد علاي", grade: "ثالث", section: 2, score: 62 },
-    { fullName: "عبدالرحمن علي بن عوض الوادعي", grade: "ثالث", section: 2, score: 62 },
-    { fullName: "عبدالله محمد ابن عبدالله آل ناجي", grade: "ثالث", section: 2, score: 62 },
-    { fullName: "عبدالملك فارس ابن عبدالله سرحان", grade: "ثالث", section: 2, score: 60 },
-    { fullName: "عزام محمد علي عسيري", grade: "ثالث", section: 2, score: 74 },
-    { fullName: "محمد أنس محمد مجدوع", grade: "ثالث", section: 2, score: 60 },
-    { fullName: "محمد عادل محمد عسيري", grade: "ثالث", section: 2, score: 62 },
-    { fullName: "محمد عبدالعزيز محمد أبوسبعه", grade: "ثالث", section: 2, score: 60 },
-    { fullName: "مشهور مسفر سعيد آل كعبان", grade: "ثالث", section: 2, score: 62 },
-    { fullName: "نايف غازي عوض القحطاني", grade: "ثالث", section: 2, score: 62 },
-    { fullName: "وسام حافظ احمد العسكري", grade: "ثالث", section: 2, score: 58 },
-    // ثالث ج (section 3)
-    { fullName: "أوس يحي عائض عسيري", grade: "ثالث", section: 3, score: 62 },
-    { fullName: "اياس فائع علي عسيري", grade: "ثالث", section: 3, score: 58 },
-    { fullName: "باسل جبران حسن القحطاني", grade: "ثالث", section: 3, score: 60 },
-    { fullName: "حمزه عبدالله حسن الوادعي", grade: "ثالث", section: 3, score: 58 },
-    { fullName: "خالد سلطان محمد العمري", grade: "ثالث", section: 3, score: 62 },
-    { fullName: "خالد عبدالرحمن أحمد عبدلي", grade: "ثالث", section: 3, score: 62 },
-    { fullName: "خالد علي محمد عباسي", grade: "ثالث", section: 3, score: 56 },
-    { fullName: "سعد مصطفى سعد القحطاني", grade: "ثالث", section: 3, score: 64 },
-    { fullName: "سلمان عبدالله حسن بالحارث", grade: "ثالث", section: 3, score: 62 },
-    { fullName: "سند خالد احمد الخالدي", grade: "ثالث", section: 3, score: 62 },
-    { fullName: "صقر عوض محمد القحطاني", grade: "ثالث", section: 3, score: 62 },
-    { fullName: "عادل علي سعد الشهراني", grade: "ثالث", section: 3, score: 60 },
-    { fullName: "عبدالعزيز محمد جربوع الشهراني", grade: "ثالث", section: 3, score: 60 },
-    { fullName: "فهد عبدالرحمن علي الزهراني", grade: "ثالث", section: 3, score: 62 },
-    { fullName: "فيصل سعود لاحق مسود", grade: "ثالث", section: 3, score: 56 },
-    { fullName: "كرم خالد راتب الزرير", grade: "ثالث", section: 3, score: 58 },
-    { fullName: "محمد راشد علي آل هتيله", grade: "ثالث", section: 3, score: 60 },
-    { fullName: "محمد عامر راضي الدغاصي", grade: "ثالث", section: 3, score: 64 },
-    { fullName: "محمد علي احمد عسيري", grade: "ثالث", section: 3, score: 60 },
-    { fullName: "مهند محمد عبده السيد", grade: "ثالث", section: 3, score: 62 },
-    { fullName: "هادي حسن هادي الوادعي", grade: "ثالث", section: 3, score: 62 },
-    { fullName: "يزيد بن محمد بن سعد العمري", grade: "ثالث", section: 3, score: 60 },
-    // رابع أ (section 1)
-    { fullName: "اياس عبدالرحمن محمدالياس الازوري", grade: "رابع", section: 1, score: 58 },
-    { fullName: "بدر حسن عثمان القرني", grade: "رابع", section: 1, score: 56 },
-    { fullName: "جسار علي محمد شايع", grade: "رابع", section: 1, score: 60 },
-    { fullName: "جسار محمد عبدالله شايع", grade: "رابع", section: 1, score: 62 },
-    { fullName: "حازم عائض محمد عسيري", grade: "رابع", section: 1, score: 70 },
-    { fullName: "خالد وليد محمد عسيري", grade: "رابع", section: 1, score: 60 },
-    { fullName: "رويد ناصر محمد عسيري", grade: "رابع", section: 1, score: 70 },
-    { fullName: "ريان الحسن زبن الله الحارثي", grade: "رابع", section: 1, score: 70 },
-    { fullName: "سلمان حاتم ناصر المعاوي", grade: "رابع", section: 1, score: 58 },
-    { fullName: "عبدالله نايف عبده الأسمري", grade: "رابع", section: 1, score: 58 },
-    { fullName: "علي طاهر الشهري", grade: "رابع", section: 1, score: 72 },
-    { fullName: "علي محمد على بهكلي", grade: "رابع", section: 1, score: 64 },
-    { fullName: "علي ناصر علي عسيري", grade: "رابع", section: 1, score: 64 },
-    { fullName: "عمر مفرح زايد البناوي", grade: "رابع", section: 1, score: 62 },
-    { fullName: "فارس محمد عبدالهادي العمري", grade: "رابع", section: 1, score: 66 },
-    { fullName: "فهد خالد فهد القحطاني", grade: "رابع", section: 1, score: 56 },
-    { fullName: "قصي سعيد حسن العمري", grade: "رابع", section: 1, score: 72 },
-    { fullName: "محمد يحي مسعود الفيفي", grade: "رابع", section: 1, score: 56 },
-    { fullName: "محمد يحيى جابر عسيري", grade: "رابع", section: 1, score: 52 },
-    { fullName: "نايف عبدالعزيز الزميلي", grade: "رابع", section: 1, score: 58 },
-    { fullName: "نايف علي يحيى الشهري", grade: "رابع", section: 1, score: 58 },
-    { fullName: "هتان علي سعد القرني", grade: "رابع", section: 1, score: 62 },
-    { fullName: "يحيى محمد يحي القحطاني", grade: "رابع", section: 1, score: 60 },
-    // رابع ب (section 2)
-    { fullName: "أحمد عبدالرحمن عامر القرني", grade: "رابع", section: 2, score: 60 },
-    { fullName: "الياس يزيد موسى آل حيدر", grade: "رابع", section: 2, score: 64 },
-    { fullName: "بدر شتوي معيض القحطاني", grade: "رابع", section: 2, score: 62 },
-    { fullName: "تركي عبدالعزيز صالح الشهري", grade: "رابع", section: 2, score: 62 },
-    { fullName: "تميم سعيد ناصر عسيري", grade: "رابع", section: 2, score: 62 },
-    { fullName: "تميم عبدالرحمن عوض الشهري", grade: "رابع", section: 2, score: 62 },
-    { fullName: "تيام سعيد بن محمد عسيري", grade: "رابع", section: 2, score: 66 },
-    { fullName: "خالد عبدالله بن عائض آل مرعان", grade: "رابع", section: 2, score: 62 },
-    { fullName: "راشد بن أحمد بن مغرم العمري", grade: "رابع", section: 2, score: 62 },
-    { fullName: "رامي عبدالله صالح الوابل", grade: "رابع", section: 2, score: 58 },
-    { fullName: "زياد عبدالله سعيد الغامدي", grade: "رابع", section: 2, score: 62 },
-    { fullName: "زياد عبدالله مسفر الغامدي", grade: "رابع", section: 2, score: 70 },
-    { fullName: "زياد محمد بن مشبب آل محمد", grade: "رابع", section: 2, score: 62 },
-    { fullName: "سعود عبدالعزيز جودالله عسيري", grade: "رابع", section: 2, score: 64 },
-    { fullName: "صالح عبدالله سعد العمري", grade: "رابع", section: 2, score: 60 },
-    { fullName: "عبدالاله عبدالله معدي الشهري", grade: "رابع", section: 2, score: 60 },
-    { fullName: "عبدالعزيز محمد ظافر القحطاني", grade: "رابع", section: 2, score: 58 },
-    { fullName: "عبدالله حسام عبدالله الوادعي", grade: "رابع", section: 2, score: 50 },
-    { fullName: "عبدالمجيد احمد ابن سعيد آل مالح", grade: "رابع", section: 2, score: 62 },
-    { fullName: "عبدالمجيد عبدالرحمن حسن الراشدي", grade: "رابع", section: 2, score: 60 },
-    { fullName: "عدي علي ضيف الله القرني", grade: "رابع", section: 2, score: 60 },
-    { fullName: "عمر علي يحيى آل قراش", grade: "رابع", section: 2, score: 60 },
-    { fullName: "فهد شريف عبده الأسمري", grade: "رابع", section: 2, score: 56 },
-    { fullName: "فهد علي محمد عياشي", grade: "رابع", section: 2, score: 58 },
-    { fullName: "كريم حذيفة محمد السليمي", grade: "رابع", section: 2, score: 64 },
-    { fullName: "مانع محمد مانع آل محيا", grade: "رابع", section: 2, score: 60 },
-    { fullName: "منذر حمد عبدالله حاضر", grade: "رابع", section: 2, score: 56 },
-    { fullName: "نواف سعد بن محمد آل فضيل", grade: "رابع", section: 2, score: 58 },
-    { fullName: "نواف يحيى عبدالرحمن محمد", grade: "رابع", section: 2, score: 62 },
-    // رابع ج (section 3)
-    { fullName: "أحمد ابراهيم علي عسيري", grade: "رابع", section: 3, score: 54 },
-    { fullName: "أحمد محمد أحمد آل مشافي", grade: "رابع", section: 3, score: 60 },
-    { fullName: "إياد إبراهيم مرعي الربعي", grade: "رابع", section: 3, score: 62 },
-    { fullName: "المنذر علي محمد معيض", grade: "رابع", section: 3, score: 56 },
-    { fullName: "بتال عبدالمجيد عثمان ال جرادة", grade: "رابع", section: 3, score: 70 },
-    { fullName: "تميم نايف عبدالله عسيري", grade: "رابع", section: 3, score: 60 },
-    { fullName: "جاسر محمد جاسر الشهري", grade: "رابع", section: 3, score: 64 },
-    { fullName: "حسام صالح هادي عسيري", grade: "رابع", section: 3, score: 62 },
-    { fullName: "زايد سلطان عبدالله ناحي", grade: "رابع", section: 3, score: 56 },
-    { fullName: "سلمان عبدالله عبدالرحمن عسيري", grade: "رابع", section: 3, score: 62 },
-    { fullName: "سيف سعد محمد سعران", grade: "رابع", section: 3, score: 60 },
-    { fullName: "سيف محمد ابراهيم فقيه", grade: "رابع", section: 3, score: 56 },
-    { fullName: "عبدالله سعد سعيد بن حمه", grade: "رابع", section: 3, score: 56 },
-    { fullName: "عبدالله عبداللطيف محفوظ محمد", grade: "رابع", section: 3, score: 64 },
-    { fullName: "عبدالله محمد الشهراني", grade: "رابع", section: 3, score: 62 },
-    { fullName: "علي عجيبي راشد الحربي", grade: "رابع", section: 3, score: 52 },
-    { fullName: "محمد سعيد محمد القحطاني", grade: "رابع", section: 3, score: 60 },
-    { fullName: "محمد عبدالملك محمد ال سلمان", grade: "رابع", section: 3, score: 58 },
-    { fullName: "محمد علي خلف الزهراني", grade: "رابع", section: 3, score: 62 },
-    { fullName: "نواف احمد حسن الهيزعي", grade: "رابع", section: 3, score: 60 },
-    { fullName: "نواف منيف ضيف الله الغامدي", grade: "رابع", section: 3, score: 46 },
-    { fullName: "يوسف أسامة المصطفى", grade: "رابع", section: 3, score: 62 },
-    // رابع د (section 4)
-    { fullName: "أحمد علي أحمد آل داهش", grade: "رابع", section: 4, score: 60 },
-    { fullName: "أوس فريد فايع آل فائع", grade: "رابع", section: 4, score: 60 },
-    { fullName: "تميم سعد محمد الأسمري", grade: "رابع", section: 4, score: 58 },
-    { fullName: "تميم عبدالعزيز محمد القحطاني", grade: "رابع", section: 4, score: 58 },
-    { fullName: "تميم عيسى احمد عسيري", grade: "رابع", section: 4, score: 64 },
-    { fullName: "تميم محمد بن سعد الشهري", grade: "رابع", section: 4, score: 60 },
-    { fullName: "تميم محمد عبدالرحمن الأسمري", grade: "رابع", section: 4, score: 62 },
-    { fullName: "جياد سعد محمد ال احمد", grade: "رابع", section: 4, score: 58 },
-    { fullName: "حسن خالد حسن الشهري", grade: "رابع", section: 4, score: 62 },
-    { fullName: "حسن فيصل حسن طبيقي", grade: "رابع", section: 4, score: 58 },
-    { fullName: "رامي عبدالعزيز محمد", grade: "رابع", section: 4, score: 60 },
-    { fullName: "ريان حامد مجدوع القرني", grade: "رابع", section: 4, score: 60 },
-    { fullName: "زايد حسن مريع آل حمدان", grade: "رابع", section: 4, score: 58 },
-    { fullName: "زيد ماهر مصلح الشامي", grade: "رابع", section: 4, score: 62 },
-    { fullName: "سعيد عبدالرحمن سعيد عسيري", grade: "رابع", section: 4, score: 60 },
-    { fullName: "عبدالاله عايض عبدالله عسيري", grade: "رابع", section: 4, score: 64 },
-    { fullName: "عبدالله وليد يحي آل جحيف", grade: "رابع", section: 4, score: 44 },
-    { fullName: "عبدالملك حسن سليمان الفيفي", grade: "رابع", section: 4, score: 52 },
-    { fullName: "عبدالوهاب حسن احمد ال طالع", grade: "رابع", section: 4, score: 60 },
-    { fullName: "علي احمد علي عسيري", grade: "رابع", section: 4, score: 60 },
-    { fullName: "فاضل حمود بن محمد جابر", grade: "رابع", section: 4, score: 64 },
-    { fullName: "لورنس حجري راجح الشهري", grade: "رابع", section: 4, score: 62 },
-    { fullName: "مازن فايز عبده الشهري", grade: "رابع", section: 4, score: 60 },
-    { fullName: "محمد علي محمد الخثعمي", grade: "رابع", section: 4, score: 54 },
-    { fullName: "محمد منصور جرمان الأسمري", grade: "رابع", section: 4, score: 62 },
-    { fullName: "مشعل محمد غزواني", grade: "رابع", section: 4, score: 62 },
-    { fullName: "ناصر عادل بدوي", grade: "رابع", section: 4, score: 56 },
-    { fullName: "نواف سعيد بن عبدالله بن يعن الله", grade: "رابع", section: 4, score: 62 },
-    // خامس أ (section 1)
-    { fullName: "تميم عبدالله علي الأسمري", grade: "خامس", section: 1, score: 60 },
-    { fullName: "تميم فيصل سعد آل شيبان", grade: "خامس", section: 1, score: 58 },
-    { fullName: "راشد عيسى علي القشر", grade: "خامس", section: 1, score: 48 },
-    { fullName: "زياد هليل عبدالله العتيبي", grade: "خامس", section: 1, score: 56 },
-    { fullName: "سلطان علي سعيد القحطاني", grade: "خامس", section: 1, score: 54 },
-    { fullName: "صالح عوض علي ال عباس", grade: "خامس", section: 1, score: 70 },
-    { fullName: "عائض محمد عائض الشهري", grade: "خامس", section: 1, score: 60 },
-    { fullName: "عادل علي الشهري", grade: "خامس", section: 1, score: 70 },
-    { fullName: "عادل مفرح زايد البناوي", grade: "خامس", section: 1, score: 80 },
-    { fullName: "عبدالله محمد عبدالله شايع", grade: "خامس", section: 1, score: 70 },
-    { fullName: "علي عبدالله علي العمري", grade: "خامس", section: 1, score: 58 },
-    { fullName: "عمر عبدالعزيز علي البكري", grade: "خامس", section: 1, score: 60 },
-    { fullName: "عمر ماجد عبدالله الشهري", grade: "خامس", section: 1, score: 72 },
-    { fullName: "فهد عبدالرحمن محمد ال سليم", grade: "خامس", section: 1, score: 60 },
-    { fullName: "مشاري سعد شائع القحطاني", grade: "خامس", section: 1, score: 60 },
-    { fullName: "منصور عبدالناصر محمد الشهري", grade: "خامس", section: 1, score: 50 },
-    { fullName: "موسى يزيد موسى آل حيدر", grade: "خامس", section: 1, score: 62 },
-    { fullName: "نايف تركي بن معيض آل سالم", grade: "خامس", section: 1, score: 68 },
-    // خامس ب (section 2)
-    { fullName: "أسامة سعد محمد السناني", grade: "خامس", section: 2, score: 62 },
-    { fullName: "إبراهيم محمد عادل البعداني", grade: "خامس", section: 2, score: 60 },
-    { fullName: "بتال عبدالعزيز محمد القحطاني", grade: "خامس", section: 2, score: 66 },
-    { fullName: "بدر علي إبراهيم ال نشبه", grade: "خامس", section: 2, score: 58 },
-    { fullName: "بسام سعيد علي آل سعد", grade: "خامس", section: 2, score: 68 },
-    { fullName: "تركي علي موسى الشهراني", grade: "خامس", section: 2, score: 62 },
-    { fullName: "خالد سعيد يحيى ال شويل", grade: "خامس", section: 2, score: 84 },
-    { fullName: "سلطان عبدالعزيز ابراهيم فقيه", grade: "خامس", section: 2, score: 58 },
-    { fullName: "سلمان حسن محمد مغرم", grade: "خامس", section: 2, score: 70 },
-    { fullName: "سلمان علي خلف الزهراني", grade: "خامس", section: 2, score: 72 },
-    { fullName: "طلال خالد عائض ال جازع", grade: "خامس", section: 2, score: 72 },
-    { fullName: "عبدالاله محمد تركي الشهري", grade: "خامس", section: 2, score: 58 },
-    { fullName: "عبدالكريم علي عسيري", grade: "خامس", section: 2, score: 52 },
-    { fullName: "عبدالله علي عبدالله الاسمري", grade: "خامس", section: 2, score: 70 },
-    { fullName: "عبدالله موسى علي العسيري", grade: "خامس", section: 2, score: 60 },
-    { fullName: "علي عبدالله علي ال سبار", grade: "خامس", section: 2, score: 74 },
-    { fullName: "محمد عبدالله محمد المالكي", grade: "خامس", section: 2, score: 62 },
-    { fullName: "محمد فارس مسفر العمورات", grade: "خامس", section: 2, score: 72 },
-    { fullName: "معن يحيى منصور عسيري", grade: "خامس", section: 2, score: 60 },
-    { fullName: "نايف وليد يحيى ال جحيف", grade: "خامس", section: 2, score: 44 },
-    // خامس ج (section 3)
-    { fullName: "أحمد علي أحمد عسيري", grade: "خامس", section: 3, score: 72 },
-    { fullName: "أحمد يحيى الحسين العسيري", grade: "خامس", section: 3, score: 62 },
-    { fullName: "بسام علي احمد ال عامر", grade: "خامس", section: 3, score: 54 },
-    { fullName: "تميم بندر أحمد الأحمري", grade: "خامس", section: 3, score: 62 },
-    { fullName: "تميم علي عيسى عسيري", grade: "خامس", section: 3, score: 62 },
-    { fullName: "تميم مشرف ضيف الله الشهري", grade: "خامس", section: 3, score: 60 },
-    { fullName: "خالد احمد حسن الهيزعي", grade: "خامس", section: 3, score: 62 },
-    { fullName: "رياض يحيى علي ال دحمس", grade: "خامس", section: 3, score: 82 },
-    { fullName: "سطام متعب حريق الاحمري", grade: "خامس", section: 3, score: 60 },
-    { fullName: "سعد دخيل الله سعد الشمراني", grade: "خامس", section: 3, score: 62 },
-    { fullName: "سعود عبدالله يوسف ال قاسم", grade: "خامس", section: 3, score: 60 },
-    { fullName: "عبدالوهاب غازي محمد ناصر", grade: "خامس", section: 3, score: 58 },
-    { fullName: "علي سيف علي محمد", grade: "خامس", section: 3, score: 60 },
-    { fullName: "ماجد حسين عبدالرحمن", grade: "خامس", section: 3, score: 60 },
-    { fullName: "مجاهد علي عامر القرني", grade: "خامس", section: 3, score: 58 },
-    { fullName: "مشاري ظافر حميدي آل لغر", grade: "خامس", section: 3, score: 60 },
-    { fullName: "مشاري محمد عوض المهجري", grade: "خامس", section: 3, score: 62 },
-    { fullName: "مهند عبدالواحد أحمد الزهراني", grade: "خامس", section: 3, score: 82 },
-    { fullName: "نواف محمد سعيد الشهراني", grade: "خامس", section: 3, score: 62 },
-    { fullName: "نواف يزيد يحيى النعمي", grade: "خامس", section: 3, score: 60 },
-    { fullName: "وسام هادي فائع عسيري", grade: "خامس", section: 3, score: 58 },
-    // خامس د (section 4)
-    { fullName: "أبي ابراهيم احمد ناجي", grade: "خامس", section: 4, score: 50 },
-    { fullName: "أحمد علي أحمد آل سعيد", grade: "خامس", section: 4, score: 58 },
-    { fullName: "أمين أحمد عبدالقادر أبو جبل", grade: "خامس", section: 4, score: 60 },
-    { fullName: "أنس يحيى ناصر الزهراني", grade: "خامس", section: 4, score: 64 },
-    { fullName: "تميم حسن إبراهيم آل جبار", grade: "خامس", section: 4, score: 64 },
-    { fullName: "تميم عائض محمد البشري", grade: "خامس", section: 4, score: 58 },
-    { fullName: "تميم علي حمدي أل حلبوب", grade: "خامس", section: 4, score: 58 },
-    { fullName: "خالد حسن آل عمير", grade: "خامس", section: 4, score: 68 },
-    { fullName: "خالد يعقوب اسماعيل جوابره", grade: "خامس", section: 4, score: 72 },
-    { fullName: "راكان عبدالله يحي عسيري", grade: "خامس", section: 4, score: 66 },
-    { fullName: "صالح ماجد صالح ال سعدان", grade: "خامس", section: 4, score: 62 },
-    { fullName: "عبدالاله عبدالله علي آل كاسي", grade: "خامس", section: 4, score: 62 },
-    { fullName: "عبدالله احمد محمد ال حنش", grade: "خامس", section: 4, score: 72 },
-    { fullName: "عبدالله مشعل عبدالله أبو مسمار", grade: "خامس", section: 4, score: 68 },
-    { fullName: "عمر علي ظافر الشهراني", grade: "خامس", section: 4, score: 74 },
-    { fullName: "غراس عمر علي ال عمر", grade: "خامس", section: 4, score: 70 },
-    { fullName: "فهد حسين آل ناجي القحطاني", grade: "خامس", section: 4, score: 60 },
-    { fullName: "مالك محمد سالم الشهري", grade: "خامس", section: 4, score: 62 },
-    { fullName: "محمد اسماعيل محمد البشري", grade: "خامس", section: 4, score: 58 },
-    { fullName: "محمد فهد عبدالله ناحي", grade: "خامس", section: 4, score: 72 },
-    { fullName: "نهيان محمد عبدالله مفرح", grade: "خامس", section: 4, score: 60 },
-    { fullName: "هشام حسين سعيد عامر", grade: "خامس", section: 4, score: 70 },
-    { fullName: "يامن ابراهيم علي عسيري", grade: "خامس", section: 4, score: 70 },
-    // سادس أ (section 1)
-    { fullName: "احمد عبدالكريم احمد علي", grade: "سادس", section: 1, score: 74 },
-    { fullName: "البراء محمد أحمد عسيري", grade: "سادس", section: 1, score: 48 },
-    { fullName: "بتال سعود سعيد الاسمري", grade: "سادس", section: 1, score: 70 },
-    { fullName: "جبران عبدالله مبارك ال جرمان الشهراني", grade: "سادس", section: 1, score: 82 },
-    { fullName: "جسار طارق القحطاني", grade: "سادس", section: 1, score: 68 },
-    { fullName: "خالد بن وليد يحيى القحطاني", grade: "سادس", section: 1, score: 58 },
-    { fullName: "خالد سعد عبدالرحمن العمري", grade: "سادس", section: 1, score: 72 },
-    { fullName: "دويل محمد دويل بالحامض", grade: "سادس", section: 1, score: 62 },
-    { fullName: "سعيد سفر سعيد الشهراني", grade: "سادس", section: 1, score: 58 },
-    { fullName: "صالح خلوفة سعيد الأحمري", grade: "سادس", section: 1, score: 62 },
-    { fullName: "ظافر محمد ظافر الشهري", grade: "سادس", section: 1, score: 70 },
-    { fullName: "عبدالعزيز سعيد يحيى ال شويل", grade: "سادس", section: 1, score: 94 },
-    { fullName: "عبدالله محمد عبدالله العمري", grade: "سادس", section: 1, score: 60 },
-    { fullName: "علي محمد علي ال عليه", grade: "سادس", section: 1, score: 58 },
-    { fullName: "علي محمد منصور مدخلي", grade: "سادس", section: 1, score: 48 },
-    { fullName: "فارس فايز عبدالله الشهري", grade: "سادس", section: 1, score: 56 },
-    { fullName: "فارس محمد ظافر الشهري", grade: "سادس", section: 1, score: 70 },
-    { fullName: "فيصل صالح خلوفة الأحمري", grade: "سادس", section: 1, score: 48 },
-    { fullName: "مؤيد سعيد سعد الغامدي", grade: "سادس", section: 1, score: 58 },
-    { fullName: "مشعل محمد مهدي القحطاني", grade: "سادس", section: 1, score: 64 },
-    { fullName: "وسام يعن الله سعيد الشهري", grade: "سادس", section: 1, score: 72 },
-    // سادس ب (section 2)
-    { fullName: "آسر محمد علي آل نازح", grade: "سادس", section: 2, score: 60 },
-    { fullName: "أحمد عبدالله سعد العمري", grade: "سادس", section: 2, score: 62 },
-    { fullName: "احمد ابراهيم احمد عسيري", grade: "سادس", section: 2, score: 60 },
-    { fullName: "اسماعيل محمد اسماعيل حمدان", grade: "سادس", section: 2, score: 62 },
-    { fullName: "المثنى محمد شعشوع الاسمري", grade: "سادس", section: 2, score: 74 },
-    { fullName: "بتال سعيد عوضه آل واكد", grade: "سادس", section: 2, score: 74 },
-    { fullName: "تركي عبدالله سعد القحطاني", grade: "سادس", section: 2, score: 68 },
-    { fullName: "تميم حذيفة محمد السليمي", grade: "سادس", section: 2, score: 72 },
-    { fullName: "تميم عبدالله ظافر ال هيال", grade: "سادس", section: 2, score: 62 },
-    { fullName: "زياد قاسم أحمد عسيري", grade: "سادس", section: 2, score: 62 },
-    { fullName: "سلطان موسى يحي حيان", grade: "سادس", section: 2, score: 60 },
-    { fullName: "صقر محمد جابر الشهري", grade: "سادس", section: 2, score: 60 },
-    { fullName: "طلال فهد ابراهيم عسيري", grade: "سادس", section: 2, score: 56 },
-    { fullName: "عبدالمجيد محمد علي العمري", grade: "سادس", section: 2, score: 72 },
-    { fullName: "عمر عبدالعزيز عبدالله آل زميع", grade: "سادس", section: 2, score: 58 },
-    { fullName: "فيصل ماجد علي العسيري", grade: "سادس", section: 2, score: 58 },
-    { fullName: "محمد سعيد عبدالله القحطاني", grade: "سادس", section: 2, score: 58 },
-    { fullName: "محمد عبدالله سعد القحطاني", grade: "سادس", section: 2, score: 62 },
-    { fullName: "مشعل خالد عبدالله عسيري", grade: "سادس", section: 2, score: 60 },
-    { fullName: "نادر عبدالعزيز القرني", grade: "سادس", section: 2, score: 70 },
-    { fullName: "نواف عبدالله متعب ال هادي", grade: "سادس", section: 2, score: 72 },
-    { fullName: "يامن علي عبدالله الألمعي", grade: "سادس", section: 2, score: 62 },
-    // سادس ج (section 3)
-    { fullName: "أنس محمد يحيى ال عمار", grade: "سادس", section: 3, score: 62 },
-    { fullName: "ابراهيم احمد ابراهيم عسيري", grade: "سادس", section: 3, score: 58 },
-    { fullName: "ابراهيم زهير محمد ال عاص", grade: "سادس", section: 3, score: 72 },
-    { fullName: "خالد عبدالله سفر الزهيري", grade: "سادس", section: 3, score: 72 },
-    { fullName: "خالد علي محمد الشهري", grade: "سادس", section: 3, score: 84 },
-    { fullName: "خالد فيصل علي القحطاني", grade: "سادس", section: 3, score: 82 },
-    { fullName: "خالد يحي محمد ال شويل", grade: "سادس", section: 3, score: 82 },
-    { fullName: "عبدالرحمن ظافر عبدالرحمن آل مضحي", grade: "سادس", section: 3, score: 74 },
-    { fullName: "عبدالرحمن فهد عثمان الشهراني", grade: "سادس", section: 3, score: 82 },
-    { fullName: "عبدالعزيز زكريا محمد عريبي", grade: "سادس", section: 3, score: 62 },
-    { fullName: "عبدالله احمد محمد عسيري", grade: "سادس", section: 3, score: 56 },
-    { fullName: "عبدالله بن علي بن عبدالله علي القاسمي عسيري", grade: "سادس", section: 3, score: 46 },
-    { fullName: "فارس حسين سعد القحطاني", grade: "سادس", section: 3, score: 58 },
-    { fullName: "فهد علي يحيى الشهراني", grade: "سادس", section: 3, score: 54 },
-    { fullName: "فواز ظافر عبدالرحمن آل مضحي", grade: "سادس", section: 3, score: 64 },
-    { fullName: "فيصل مريع سعد هباش", grade: "سادس", section: 3, score: 62 },
-    { fullName: "محمد أيمن إبراهيم آل مطاعن", grade: "سادس", section: 3, score: 54 },
-    { fullName: "محمد احمد محمد عسيري", grade: "سادس", section: 3, score: 62 },
-    { fullName: "محمد طاهر محمد الشهري", grade: "سادس", section: 3, score: 62 },
-    { fullName: "مشاري سعيد مانع الاحمري", grade: "سادس", section: 3, score: 62 },
-    { fullName: "مهند زياد محمد العسكري", grade: "سادس", section: 3, score: 66 },
-    { fullName: "نادر سالم مهدي ال معمر", grade: "سادس", section: 3, score: 68 },
-    { fullName: "يزن بشير يحيى الفقيه", grade: "سادس", section: 3, score: 58 },
-  ];
+  const rawStudents = STUDENTS_SEED;
 
   _inMemoryStudents = rawStudents.map((s, i) => ({
     id: i + 1,
@@ -613,16 +174,72 @@ function getInMemoryStudents(grade?: string, section?: number): InMemoryStudent[
 }
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
+// استخراج رابط قاعدة البيانات من المتغيرات الشائعة.
+// Railway قد يوفّر الرابط باسم MYSQL_URL أو كمتغيرات منفصلة (MYSQLHOST...)
+// بدل DATABASE_URL، وهذا سبب شائع لعدم الاتصال وفقدان البيانات.
+export function resolveDatabaseUrl(): string {
+  const direct =
+    process.env.DATABASE_URL ||
+    process.env.MYSQL_URL ||
+    process.env.MYSQL_PUBLIC_URL ||
+    process.env.DATABASE_PUBLIC_URL;
+  if (direct) return direct;
+
+  const host = process.env.MYSQLHOST || process.env.MYSQL_HOST;
+  const user = process.env.MYSQLUSER || process.env.MYSQL_USER;
+  const password = process.env.MYSQLPASSWORD || process.env.MYSQL_PASSWORD;
+  const database = process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE;
+  const port = process.env.MYSQLPORT || process.env.MYSQL_PORT || "3306";
+  if (host && user && database) {
+    const pass = password ? `:${encodeURIComponent(password)}` : "";
+    return `mysql://${user}${pass}@${host}:${port}/${database}`;
+  }
+  return "";
+}
+
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
-    try {
-      _db = drizzle(process.env.DATABASE_URL);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
+  if (!_db) {
+    const url = resolveDatabaseUrl();
+    if (url) {
+      try {
+        _db = drizzle(url);
+      } catch (error) {
+        console.warn("[Database] Failed to connect:", error);
+        _db = null;
+      }
     }
   }
   return _db;
+}
+
+// التحقق من حالة الاتصال بقاعدة البيانات فعلياً (وليس فقط وجود الرابط)
+// يُستخدم لتنبيه المدير عند تشغيل الموقع بدون قاعدة بيانات (البيانات مؤقتة وتُفقد عند إعادة التشغيل)
+let _dbStatusCache: { connected: boolean; checkedAt: number } | null = null;
+export async function getDbStatus(): Promise<{ connected: boolean; hasUrl: boolean; reason?: string }> {
+  const hasUrl = !!resolveDatabaseUrl();
+  // كاش لمدة 30 ثانية لتفادي فحص الاتصال في كل طلب
+  if (_dbStatusCache && Date.now() - _dbStatusCache.checkedAt < 30000) {
+    return { connected: _dbStatusCache.connected, hasUrl };
+  }
+
+  if (!hasUrl) {
+    _dbStatusCache = { connected: false, checkedAt: Date.now() };
+    return { connected: false, hasUrl: false, reason: "DATABASE_URL غير مضبوط" };
+  }
+
+  try {
+    const db = await getDb();
+    if (!db) {
+      _dbStatusCache = { connected: false, checkedAt: Date.now() };
+      return { connected: false, hasUrl: true, reason: "تعذّر إنشاء الاتصال" };
+    }
+    await db.execute(sql`SELECT 1`);
+    _dbStatusCache = { connected: true, checkedAt: Date.now() };
+    return { connected: true, hasUrl: true };
+  } catch (error: any) {
+    _dbStatusCache = { connected: false, checkedAt: Date.now() };
+    return { connected: false, hasUrl: true, reason: error?.message || "فشل الاتصال" };
+  }
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {

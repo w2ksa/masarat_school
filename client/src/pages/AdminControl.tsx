@@ -14,6 +14,7 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { StudentDetailsDialog } from "@/components/StudentDetailsDialog";
+import { DbStatusBanner } from "@/components/DbStatusBanner";
 import { WeeklyStatsSection } from "@/components/WeeklyStatsSection";
 import { ReportExport } from "@/components/ReportExport";
 import { DailyReportButton } from "@/components/DailyReportButton";
@@ -223,6 +224,26 @@ export default function AdminControl() {
       toast.error(error.message || "حدث خطأ أثناء إغلاق التصويت");
     },
   });
+
+  // @ts-ignore
+  const applyFeaturedMutation = trpc.students.applyFeaturedScores.useMutation({
+    onSuccess: (data: any) => {
+      utils.students.list.invalidate();
+      utils.students.topStudents.invalidate();
+      utils.students.getLevelStats.invalidate();
+      const notFoundMsg = data.notFound?.length ? ` — تعذّر إيجاد: ${data.notFound.join("، ")}` : "";
+      toast.success(`تم تطبيق درجات الطلاب المميّزين: حُدّث ${data.updatedCount}، دون تغيير ${data.unchangedCount}${notFoundMsg}`);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "حدث خطأ أثناء تطبيق الدرجات");
+    },
+  });
+
+  const handleApplyFeatured = () => {
+    if (confirm("سيتم تعيين درجات الطلاب الـ17 المميّزين (160 إلى 100) بالضبط. لن يتأثر أي طالب آخر. متابعة؟")) {
+      applyFeaturedMutation.mutate();
+    }
+  };
 
   // Bulk category mutation
   const bulkCategoryMutation = trpc.bulkCategory.bulkApply.useMutation({
@@ -441,6 +462,8 @@ export default function AdminControl() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* تنبيه عدم الاتصال بقاعدة البيانات */}
+      <DbStatusBanner />
       {/* Header */}
       <header className="bg-slate-800/50 backdrop-blur border-b border-slate-700">
         <div className="container mx-auto px-4 py-4">
@@ -944,6 +967,22 @@ export default function AdminControl() {
                   <p className="text-sm text-slate-300">
                     عند فتح التصويت، سيتمكن المعلمون من اختيار 3 طلاب لمدة أسبوع.
                   </p>
+                </div>
+
+                {/* تطبيق درجات الطلاب المميّزين */}
+                <div className="p-4 rounded-lg bg-amber-900/20 border border-amber-700">
+                  <h4 className="font-semibold text-white mb-1">درجات الطلاب المميّزين (17 طالباً)</h4>
+                  <p className="text-sm text-slate-300 mb-3">
+                    يعيّن درجات الـ17 طالباً (من 160 إلى 100) بالضبط. لا يؤثر على أي طالب آخر ولا يحذف شيئاً.
+                  </p>
+                  <Button
+                    onClick={handleApplyFeatured}
+                    disabled={applyFeaturedMutation.isPending}
+                    className="bg-amber-600 hover:bg-amber-700"
+                  >
+                    <Check className="w-4 h-4 ml-2" />
+                    {applyFeaturedMutation.isPending ? "جاري التطبيق..." : "تطبيق درجات الطلاب المميّزين"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
