@@ -17,7 +17,7 @@ export const FEATURED_SCORES: FeaturedScore[] = [
   { name: "سعيد عبدالرحمن سعيد عسيري", grade: "سادس", section: 3, score: 139 },
   { name: "رامي عبدالعزيز محمد مكرزي", grade: "سادس", section: 3, score: 136 },
   
-  // طلاب إضافيين بدرجات عشوائية
+  // ذطلاب إضافيين بدرجات عشوائية
   { name: "أحمد حسام عبد الله الوادعي", grade: "رابع", section: 1, score: 95 },
   { name: "أوس علي محمد الشهري", grade: "رابع", section: 1, score: 78 },
   { name: "بسام محمد بن علي القرني", grade: "رابع", section: 1, score: 102 },
