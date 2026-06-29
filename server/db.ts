@@ -5,6 +5,7 @@ import { ENV } from './_core/env';
 import { STUDENTS_SEED } from '@shared/studentsSeed';
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _databaseStudentSeedPromise: Promise<void> | null = null;
 
 // ===== In-Memory Student Store (fallback when no database) =====
 type InMemoryStudent = {
@@ -171,6 +172,31 @@ function getInMemoryStudents(grade?: string, section?: number): InMemoryStudent[
     return a.fullName.localeCompare(b.fullName, 'ar');
   });
   return result;
+}
+
+async function ensureDatabaseStudentsSeeded(db: ReturnType<typeof drizzle>): Promise<void> {
+  if (!_databaseStudentSeedPromise) {
+    _databaseStudentSeedPromise = (async () => {
+      const existing = await db.select({ id: students.id }).from(students).limit(1);
+      if (existing.length > 0) return;
+
+      await db.insert(students).values(
+        STUDENTS_SEED.map((student) => ({
+          fullName: student.fullName,
+          grade: student.grade,
+          section: student.section,
+          score: student.score,
+        }))
+      );
+
+      console.log(`[Database] Seeded ${STUDENTS_SEED.length} students`);
+    })().catch((error) => {
+      _databaseStudentSeedPromise = null;
+      throw error;
+    });
+  }
+
+  await _databaseStudentSeedPromise;
 }
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
@@ -428,6 +454,8 @@ export async function getAllStudents(grade?: string, section?: number) {
     return getInMemoryStudents(grade, section);
   }
 
+  await ensureDatabaseStudentsSeeded(db);
+
   let query = db.select().from(students);
 
   const conditions = [];
@@ -462,6 +490,8 @@ export async function getTopStudents(limit: number = 5, grade?: string, gradeGro
     return filtered.sort((a, b) => b.score - a.score).slice(0, limit);
   }
 
+  await ensureDatabaseStudentsSeeded(db);
+
   let query = db.select().from(students);
 
   if (grade && grade !== "all" && grade !== "__all__") {
@@ -491,6 +521,7 @@ export async function getLevelStats() {
     initInMemoryStudents();
     allStudents = _inMemoryStudents;
   } else {
+    await ensureDatabaseStudentsSeeded(db);
     allStudents = await db.select().from(students);
   }
 
