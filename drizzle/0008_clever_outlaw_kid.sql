@@ -1,1 +1,0 @@
-ALTER TABLE `students` ADD `section` int DEFAULT 1;

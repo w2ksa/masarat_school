@@ -1,1 +1,0 @@
-ALTER TABLE `student_teacher_votes` ADD `comment` text;
